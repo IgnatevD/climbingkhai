@@ -1,0 +1,37 @@
+.event-page__head { position: relative; padding-block: var(--s-7) var(--s-6); border-bottom: 1px solid var(--border); overflow: hidden; }
+.event-page__head::after {
+  content: "";
+  position: absolute;
+  right: -60px; top: -40px;
+  width: 260px; height: 230px;
+  background: var(--cat);
+  opacity: 0.18;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  animation: hold-float 9s ease-in-out infinite alternate;
+}
+.event-page__head-inner { position: relative; z-index: 1; display: grid; gap: var(--s-4); justify-items: start; }
+.event-page__back { font-weight: 800; color: var(--text-2); }
+.event-page__back:hover { color: var(--accent); }
+.event-page__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); font-size: var(--fs-xs); }
+.event-page__title { font-size: clamp(1.9rem, 6.5vw, 3.6rem); max-width: 22ch; }
+
+.event-page__body { display: grid; gap: var(--s-6); padding-block: var(--s-7); }
+.event-page__img { max-width: 720px; border-radius: var(--r-lg); box-shadow: var(--shadow-2); }
+.event-page__img img { max-height: 520px; object-fit: contain; background: var(--bg-2); }
+.event-page__text { display: grid; gap: var(--s-4); max-width: 72ch; font-size: var(--fs-lg); }
+.event-page__text p { color: var(--text-2); }
+.event-page__source { justify-self: start; margin-top: var(--s-3); }
+
+.event-rows { display: grid; border-radius: var(--r-md); border: 1px solid var(--border); overflow: hidden; }
+.event-rows div { display: grid; grid-template-columns: minmax(120px, 0.45fr) 1fr; gap: var(--s-3); padding: var(--s-3) var(--s-4); }
+.event-rows div:nth-child(odd) { background: var(--surface); }
+.event-rows dt { font-family: var(--font-mono); font-size: var(--fs-sm); font-weight: 700; color: var(--accent); }
+.event-rows dd { font-weight: 600; }
+
+.events-related { display: grid; gap: var(--s-4); }
+@media (min-width: 720px) { .events-related { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) {
+  .event-page__body.has-img { grid-template-columns: 1fr 1fr; align-items: start; }
+  .event-page__body.has-img .event-page__img { position: sticky; top: calc(var(--header-h) + 24px); }
+  .events-related { grid-template-columns: repeat(3, 1fr); }
+}

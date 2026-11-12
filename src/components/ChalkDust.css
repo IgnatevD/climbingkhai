@@ -1,0 +1,13 @@
+.chalk-layer { position: fixed; inset: 0; z-index: 300; pointer-events: none; overflow: hidden; }
+.chalk {
+  position: absolute;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--chalk);
+  filter: blur(1.5px);
+  animation: chalk-puff ease-out forwards;
+}
+@keyframes chalk-puff {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 0.9; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1.6); opacity: 0; }
+}

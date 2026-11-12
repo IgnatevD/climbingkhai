@@ -1,0 +1,34 @@
+.shoe { font-size: 3rem; margin-top: var(--s-2); animation: shoe-step 3s ease-in-out infinite; transform-origin: bottom left; width: max-content; }
+@keyframes shoe-step { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-14deg) translateY(-4px); } 90% { transform: rotate(4deg); } }
+
+.course-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.course-fact {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-4) var(--s-5);
+  animation: fact-in 700ms var(--spring) both;
+  animation-delay: calc(var(--i) * 90ms + 200ms);
+}
+.course-fact span { font-size: var(--fs-xs); font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.course-fact b { font-family: var(--font-display); font-size: clamp(1.05rem, 3.6vw, 1.6rem); line-height: 1.25; }
+.course-fact:last-of-type b { color: var(--accent); }
+.course-facts__cta { grid-column: 1 / -1; }
+@keyframes fact-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } }
+.section .container + .container { margin-top: var(--s-5); }
+
+/* Програма альпінізму — вузли */
+.knots { list-style: none; display: grid; gap: var(--s-3); }
+.knot { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); font-weight: 600; }
+.knot__icon { width: 34px; height: 34px; flex-shrink: 0; }
+.knot__icon path {
+  fill: none;
+  stroke: var(--rope);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-dasharray: 90;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 900ms var(--ease);
+}
+.knot:hover .knot__icon path { stroke-dashoffset: 180; }
+@media (min-width: 640px) { .knots { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .knots { grid-template-columns: repeat(3, 1fr); } }

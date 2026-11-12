@@ -1,0 +1,86 @@
+.altimeter { --p: 0; pointer-events: none; }
+
+/* Мобільний: смуга-мотузка під шапкою */
+.altimeter__bar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0;
+  z-index: 49;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--rope) 0 8px, var(--hold-yellow) 8px 12px);
+  transform-origin: left;
+  transform: scaleX(var(--p));
+}
+.altimeter__track { display: none; }
+
+/* Десктоп: вертикальна мотузка */
+@media (min-width: 1024px) {
+  .altimeter__bar { display: none; }
+  .altimeter__track {
+    display: block;
+    position: fixed;
+    right: 22px;
+    top: calc(var(--header-h) + 28px);
+    bottom: 36px;
+    width: 4px;
+    z-index: 40;
+  }
+  .altimeter__rope {
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    background: repeating-linear-gradient(180deg, var(--border-strong) 0 6px, transparent 6px 9px);
+  }
+  /* Пройдена частина мотузки — знизу вгору */
+  .altimeter__rope::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: calc(var(--p) * 100%);
+    border-radius: 4px;
+    background: repeating-linear-gradient(180deg, var(--rope) 0 7px, var(--hold-yellow) 7px 10px);
+    box-shadow: 0 0 10px color-mix(in oklab, var(--rope) 60%, transparent);
+  }
+  .altimeter__tick {
+    position: absolute;
+    right: 12px;
+    bottom: calc(var(--m) * 100%);
+    transform: translateY(50%);
+    font: 600 10px/1 var(--font-mono);
+    color: var(--text-3);
+  }
+  .altimeter__climber {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--p) * 100%);
+    transform: translate(-50%, 50%);
+    color: var(--text);
+    transition: bottom 120ms linear;
+  }
+  .altimeter__label {
+    position: absolute;
+    right: 26px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    padding: 4px 10px;
+    border-radius: var(--r-sm);
+    background: var(--glass-strong);
+    border: 1px solid var(--border);
+    font: 800 12px/1.2 var(--font-mono);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .altimeter__label small { font: 600 9px/1.2 var(--font-body); color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; }
+  .altimeter__flag {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-30%) scale(0) rotate(-30deg);
+    transform-origin: bottom left;
+    font-size: 18px;
+    transition: transform var(--t-3) var(--spring);
+  }
+  .altimeter.is-top .altimeter__flag { transform: translateX(-30%) scale(1) rotate(0); }
+  .altimeter.is-top .altimeter__label { border-color: var(--accent); color: var(--accent); }
+}

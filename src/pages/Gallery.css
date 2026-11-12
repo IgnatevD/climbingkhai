@@ -1,0 +1,15 @@
+.albums { display: grid; gap: var(--s-4); }
+@media (min-width: 900px) { .albums { grid-template-columns: 1fr 1fr; } }
+
+.album { display: grid; gap: var(--s-4); padding: var(--s-4); }
+.album__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-3); padding: var(--s-2) var(--s-2) 0; }
+.album__year { font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; color: var(--accent); }
+.album__count { flex-shrink: 0; padding: 3px 10px; border-radius: var(--r-full); background: var(--surface-2); font-size: var(--fs-xs); font-weight: 700; color: var(--text-2); }
+.album__grid { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.album__thumb { display: block; width: 100%; border-radius: var(--r-sm); overflow: hidden; }
+.album__thumb .photo { aspect-ratio: 1; border-radius: var(--r-sm); }
+.album__thumb img { transition: transform 700ms var(--ease), opacity var(--t-3) var(--ease); }
+.album__thumb:hover img { transform: scale(1.1); }
+.album__grid li:first-child { grid-column: span 2; grid-row: span 2; }
+.album__more { display: inline-flex; align-items: center; gap: 6px; padding: 0 var(--s-2) var(--s-2); font-size: var(--fs-sm); font-weight: 700; color: var(--text-2); }
+.album__more:hover { color: var(--accent); }

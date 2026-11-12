@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#11161b"/>
+  <g fill="#ffffff" fill-opacity=".06">
+    <circle cx="40" cy="40" r="4"/><circle cx="120" cy="40" r="4"/><circle cx="200" cy="40" r="4"/>
+  </g>
+  <path d="M900 600 L860 520 L930 450 L870 370 L960 300 L900 220 L980 150 L940 80" fill="none" stroke="#ff6b35" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#ff6b35"><circle cx="860" cy="520" r="20"/><circle cx="930" cy="450" r="22"/><circle cx="870" cy="370" r="18"/><circle cx="960" cy="300" r="22"/><circle cx="900" cy="220" r="19"/><circle cx="980" cy="150" r="21"/></g>
+  <g fill="#2ec4b6"><circle cx="1060" cy="480" r="18"/><circle cx="1080" cy="300" r="16"/></g>
+  <g fill="#9b7bff"><circle cx="780" cy="260" r="17"/><circle cx="760" cy="440" r="15"/></g>
+  <text x="80" y="300" font-family="Arial, sans-serif" font-weight="800" font-size="110" fill="#eef1ed">Лізь</text>
+  <text x="80" y="410" font-family="Arial, sans-serif" font-weight="800" font-size="110" fill="#ff6b35">вище.</text>
+  <text x="80" y="500" font-family="Arial, sans-serif" font-weight="600" font-size="34" fill="#a9b3b8">Клуб скелелазіння та альпінізму ХАІ · 15 м</text>
+</svg>

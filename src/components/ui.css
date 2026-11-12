@@ -1,0 +1,94 @@
+/* ---------- Заголовок сторінки ---------- */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--s-8) var(--s-7);
+  border-bottom: 1px solid var(--border);
+}
+.page-hero__inner { position: relative; display: grid; gap: var(--s-4); justify-items: start; }
+.page-hero__title { font-size: clamp(2.1rem, 8vw, 4.4rem); max-width: 16ch; }
+@media (min-width: 1024px) { .page-hero { padding-block: var(--s-9) var(--s-8); } }
+
+/* ---------- Декоративні зачепи ---------- */
+.holds { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.holds__item {
+  position: absolute;
+  opacity: 0.22;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+  animation: hold-float var(--float, 8s) ease-in-out var(--delay, 0s) infinite alternate;
+}
+@keyframes hold-float { to { transform: translateY(-10px) rotate(8deg); } }
+
+/* ---------- Фото ---------- */
+.photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+}
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity var(--t-3) var(--ease), transform 1.2s var(--ease);
+}
+.photo--ok img { opacity: 1; transform: none; }
+.photo--loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, var(--surface-2) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.photo--error .holds__item { opacity: 0.6; }
+@keyframes shimmer { to { background-position: -150% 0; } }
+
+/* ---------- Лічильник ---------- */
+.counter { display: grid; gap: 2px; }
+.counter strong {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 9vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.counter strong span { font-size: 0.5em; color: var(--accent); margin-left: 2px; }
+.counter small { color: var(--text-2); font-size: var(--fs-sm); font-weight: 600; }
+
+/* ---------- Біжучий рядок ---------- */
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--border);
+  padding-block: var(--s-4);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-5);
+  padding-right: var(--s-5);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.marquee__item:nth-child(3n + 1) { color: var(--text); }
+.marquee__item i {
+  width: 18px; height: 16px;
+  background: var(--accent);
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+}
+.marquee__item:nth-child(even) i { background: var(--hold-teal); }
+@keyframes marquee { to { transform: translateX(-50%); } }

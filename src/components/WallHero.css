@@ -1,0 +1,78 @@
+.wall {
+  --mx: 0;
+  --my: 0;
+  position: relative;
+  perspective: 1200px;
+}
+.wall__panel {
+  position: relative;
+  max-width: min(420px, 82vw);
+  margin-inline: auto;
+  transform: rotateY(calc(var(--mx) * -10deg)) rotateX(calc(var(--my) * 8deg));
+  transform-style: preserve-3d;
+  transition: transform 600ms var(--ease);
+}
+.wall__svg {
+  width: 100%;
+  height: auto;
+  border-radius: 28px;
+  box-shadow: var(--shadow-2), inset 0 0 0 1px var(--border);
+  overflow: visible;
+}
+.wall__shade-top { stop-color: color-mix(in oklab, var(--surface-solid) 85%, var(--hold-violet)); }
+.wall__shade-bottom { stop-color: var(--surface-solid); }
+.wall__bolt { fill: rgba(127, 127, 127, 0.28); }
+.wall__seam { stroke: var(--border); stroke-width: 1.5; }
+
+.wall__layer { transition: transform 600ms var(--ease); }
+.wall__layer--back { transform: translate(calc(var(--mx) * -8px), calc(var(--my) * -8px)); }
+.wall__layer--front { transform: translate(calc(var(--mx) * 10px), calc(var(--my) * 10px)); }
+
+.hold { stroke: rgba(0, 0, 0, 0.22); stroke-width: 1.2; }
+.hold--orange { fill: var(--hold-orange); }
+.hold--teal { fill: var(--hold-teal); opacity: 0.85; }
+.hold--violet { fill: var(--hold-violet); opacity: 0.85; }
+.hold--yellow { fill: var(--hold-yellow); opacity: 0.85; }
+.hold--lime { fill: var(--hold-lime); opacity: 0.85; }
+.hold--pink { fill: var(--hold-pink); opacity: 0.85; }
+.hold__bolt { fill: rgba(0, 0, 0, 0.4); }
+
+/* Зачепи маршруту з'являються по черзі знизу вгору */
+.route-hold { animation: hold-pop 600ms var(--spring) both; animation-delay: calc(var(--i) * 90ms + 200ms); transform-box: fill-box; }
+@keyframes hold-pop { from { opacity: 0; scale: 0.2; } }
+
+.wall__rope {
+  fill: none;
+  stroke: var(--rope);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+  animation: rope-draw 2.6s 1s var(--ease) forwards;
+}
+@keyframes rope-draw { to { stroke-dashoffset: 0; } }
+
+.wall__anchor circle:first-child { fill: none; stroke: var(--text-2); stroke-width: 3; }
+.wall__anchor circle:last-child { fill: var(--text-2); }
+
+.climber__head { fill: var(--hold-yellow); stroke: rgba(0, 0, 0, 0.35); stroke-width: 1.5; }
+.climber__body { fill: none; stroke: var(--text); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.climber__harness { fill: var(--hold-orange); }
+
+.wall__scale {
+  position: absolute;
+  top: 6%;
+  bottom: 6%;
+  left: -6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform: translateX(-100%);
+  font: 700 11px/1 var(--font-mono);
+  color: var(--text-3);
+}
+.wall__scale span { position: relative; padding-right: 10px; }
+.wall__scale span::after { content: ""; position: absolute; right: 0; top: 50%; width: 6px; height: 1px; background: currentColor; }
+@media (max-width: 479px) { .wall__scale { display: none; } }

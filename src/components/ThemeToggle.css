@@ -1,0 +1,36 @@
+.theme-toggle {
+  width: 64px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--r-full);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  transition: transform var(--t-2) var(--spring);
+}
+.theme-toggle:hover { transform: scale(1.06); }
+.theme-toggle svg { width: 100%; height: 100%; display: block; }
+
+.tt-sky { fill: #8fd3ff; transition: fill var(--t-3) var(--ease); }
+.tt-stars circle { fill: #fff; opacity: 0; transition: opacity var(--t-3); }
+.tt-orb { transform: translate(46px, 11px); transition: transform var(--t-3) var(--spring); }
+.tt-sun { fill: #ffd23f; transition: fill var(--t-3); }
+.tt-moon-cut { fill: #8fd3ff; transform: translate(14px, -6px); transition: transform var(--t-3) var(--ease), fill var(--t-3); }
+.tt-far { fill: #7a8a7e; transition: fill var(--t-3); }
+.tt-near { fill: #4f5f54; transition: fill var(--t-3); }
+
+/* Ніч: місяць ліворуч, зорі, темне небо */
+.theme-toggle[data-mode="dark"] .tt-sky { fill: #1b2540; }
+.theme-toggle[data-mode="dark"] .tt-stars circle { opacity: 1; }
+.theme-toggle[data-mode="dark"] .tt-orb { transform: translate(16px, 11px); }
+.theme-toggle[data-mode="dark"] .tt-sun { fill: #f2efe2; }
+.theme-toggle[data-mode="dark"] .tt-moon-cut { fill: #1b2540; transform: translate(0, 0); }
+.theme-toggle[data-mode="dark"] .tt-far { fill: #2c3a52; }
+.theme-toggle[data-mode="dark"] .tt-near { fill: #121a2b; }
+
+/* Перемикання теми — коло, що розходиться від кнопки */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { animation: theme-circle 700ms var(--ease); }
+@keyframes theme-circle {
+  from { clip-path: circle(0 at var(--vt-x, 90%) var(--vt-y, 0)); }
+  to { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 90%) var(--vt-y, 0)); }
+}

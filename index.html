@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Клуб скелелазіння та альпінізму ХАІ — Харків</title>
+    <meta name="description" content="Найбільший критий скеледром Харкова — 15 метрів. Тренування для дорослих і дітей, базовий курс скелелазіння, альпінізм, промальп. Клуб скелелазіння та альпінізму ХАІ." />
+    <meta name="theme-color" content="#11161b" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Клуб скелелазіння та альпінізму ХАІ" />
+    <meta property="og:description" content="15-метровий скеледром ХАІ: тренування, курси, альпінізм, промальп." />
+    <meta property="og:image" content="/og.svg" />
+    <script>
+      /* Тема до першого малювання — без «блимання» */
+      (function () {
+        try {
+          var t = localStorage.getItem('ck-theme');
+          if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+          if (location.pathname === '/en' || location.pathname.indexOf('/en/') === 0) document.documentElement.lang = 'en';
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Для роботи сайту увімкніть JavaScript / Please enable JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

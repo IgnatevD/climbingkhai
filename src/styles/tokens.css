@@ -1,0 +1,155 @@
+/* =========================================================
+   Дизайн-токени. Усі кольори, відступи, радіуси й анімації — тут.
+   Темна тема — «нічна скеля», світла — «вапняк і магнезія».
+   ========================================================= */
+:root {
+  color-scheme: dark;
+
+  /* Поверхні */
+  --bg: #11161b;
+  --bg-2: #171e25;
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-2: rgba(255, 255, 255, 0.075);
+  --surface-solid: #1a222a;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.17);
+
+  /* Текст */
+  --text: #eef1ed;
+  --text-2: #a9b3b8;
+  --text-3: #6f7b82;
+
+  /* Акценти — кольори зачепів */
+  --hold-orange: #ff6b35;
+  --hold-teal: #2ec4b6;
+  --hold-yellow: #ffd23f;
+  --hold-violet: #9b7bff;
+  --hold-lime: #a7e34a;
+  --hold-pink: #ff5d8f;
+
+  --accent: var(--hold-orange);
+  --accent-2: var(--hold-teal);
+  --accent-ink: #1b0d05;
+  --ok: #57d68d;
+  --warn: #ffcb57;
+
+  --chalk: rgba(255, 255, 255, 0.9);
+  --rope: #ff6b35;
+  --grid-dot: rgba(255, 255, 255, 0.06);
+
+  /* Скло */
+  --glass: rgba(23, 30, 37, 0.66);
+  --glass-strong: rgba(17, 22, 27, 0.9);
+  --blur: 18px;
+
+  /* Тіні */
+  --shadow-1: 0 2px 10px rgba(0, 0, 0, 0.25);
+  --shadow-2: 0 16px 48px rgba(0, 0, 0, 0.38);
+  --glow: 0 10px 34px rgba(255, 107, 53, 0.35);
+
+  /* Типографіка */
+  --font-display: "Unbounded Variable", "Manrope Variable", system-ui, sans-serif;
+  --font-body: "Manrope Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: clamp(1.35rem, 3.6vw, 1.75rem);
+  --fs-2xl: clamp(1.8rem, 6vw, 3rem);
+  --fs-hero: clamp(2.4rem, 11vw, 6rem);
+
+  /* Відступи */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+  --s-9: 7rem;
+
+  --container: 1180px;
+  --gutter: 16px;
+  --header-h: 64px;
+
+  /* Радіуси */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 34px;
+  --r-full: 999px;
+
+  /* Рух */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-1: 160ms;
+  --t-2: 320ms;
+  --t-3: 620ms;
+}
+
+/* Світла тема: за системою або вибрана вручну */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f4efe6;
+    --bg-2: #ebe4d8;
+    --surface: rgba(255, 255, 255, 0.6);
+    --surface-2: rgba(255, 255, 255, 0.85);
+    --surface-solid: #fffaf2;
+    --border: rgba(40, 30, 20, 0.1);
+    --border-strong: rgba(40, 30, 20, 0.18);
+    --text: #1c2126;
+    --text-2: #4f5a60;
+    --text-3: #87908f;
+    --hold-orange: #e8521c;
+    --hold-teal: #0f9d90;
+    --hold-yellow: #d9a400;
+    --hold-violet: #6f4fe0;
+    --hold-lime: #5a9a12;
+    --hold-pink: #d93a6c;
+    --accent-ink: #fff;
+    --chalk: rgba(60, 50, 40, 0.5);
+    --grid-dot: rgba(40, 30, 20, 0.08);
+    --glass: rgba(255, 251, 244, 0.72);
+    --glass-strong: rgba(255, 251, 244, 0.94);
+    --shadow-1: 0 2px 10px rgba(60, 40, 20, 0.08);
+    --shadow-2: 0 18px 50px rgba(60, 40, 20, 0.14);
+    --glow: 0 10px 30px rgba(232, 82, 28, 0.28);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4efe6;
+  --bg-2: #ebe4d8;
+  --surface: rgba(255, 255, 255, 0.6);
+  --surface-2: rgba(255, 255, 255, 0.85);
+  --surface-solid: #fffaf2;
+  --border: rgba(40, 30, 20, 0.1);
+  --border-strong: rgba(40, 30, 20, 0.18);
+  --text: #1c2126;
+  --text-2: #4f5a60;
+  --text-3: #87908f;
+  --hold-orange: #e8521c;
+  --hold-teal: #0f9d90;
+  --hold-yellow: #d9a400;
+  --hold-violet: #6f4fe0;
+  --hold-lime: #5a9a12;
+  --hold-pink: #d93a6c;
+  --accent-ink: #fff;
+  --chalk: rgba(60, 50, 40, 0.5);
+  --grid-dot: rgba(40, 30, 20, 0.08);
+  --glass: rgba(255, 251, 244, 0.72);
+  --glass-strong: rgba(255, 251, 244, 0.94);
+  --shadow-1: 0 2px 10px rgba(60, 40, 20, 0.08);
+  --shadow-2: 0 18px 50px rgba(60, 40, 20, 0.14);
+  --glow: 0 10px 30px rgba(232, 82, 28, 0.28);
+}
+
+@media (min-width: 640px) {
+  :root { --gutter: 24px; }
+}
+@media (min-width: 1024px) {
+  :root { --header-h: 72px; --gutter: 32px; }
+}

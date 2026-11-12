@@ -1,0 +1,45 @@
+.chip small { margin-left: 4px; opacity: 0.6; font-family: var(--font-mono); }
+.chip--cat::before {
+  content: "";
+  display: inline-block;
+  width: 10px; height: 9px;
+  margin-right: 6px;
+  background: var(--cat);
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+}
+
+/* Таймлайн-«маршрут» по роках */
+.timeline { position: relative; display: grid; gap: var(--s-7); }
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--gutter) + 27px);
+  top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(180deg, var(--border-strong) 0 8px, transparent 8px 13px);
+}
+.timeline__year { display: grid; gap: var(--s-4); }
+.timeline__label { position: sticky; top: calc(var(--header-h) + 12px); z-index: 2; }
+.timeline__label span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 58px; height: 52px;
+  padding: 0 12px;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 800;
+  box-shadow: var(--glow);
+}
+.timeline__items { display: grid; gap: var(--s-4); padding-left: 72px; }
+@media (min-width: 900px) {
+  .timeline__items { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1200px) {
+  .timeline__year { grid-template-columns: 90px 1fr; align-items: start; }
+  .timeline__items { padding-left: 0; grid-template-columns: repeat(3, 1fr); }
+  .timeline::before { left: calc(var(--gutter) + 28px); }
+}

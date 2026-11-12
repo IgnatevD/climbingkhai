@@ -1,0 +1,172 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+/* Скляний фон — окремим шаром, щоб не ламати position: fixed у мобільного меню */
+.header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-bottom: 1px solid transparent;
+  transition: background var(--t-2), border-color var(--t-2);
+}
+.header.is-scrolled::before,
+.header.is-open::before {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+  backdrop-filter: blur(var(--blur)) saturate(140%);
+  border-bottom-color: var(--border);
+}
+.header__bar {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+/* Логотип */
+.brand { display: flex; align-items: center; gap: var(--s-2); color: var(--text); flex-shrink: 0; }
+.brand__mark { transition: transform var(--t-3) var(--spring); }
+.brand:hover .brand__mark { transform: rotate(-20deg); }
+.brand__text { display: grid; line-height: 1; font-family: var(--font-display); }
+.brand__text b { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em; }
+.brand__text span { font-size: 0.7rem; color: var(--accent); font-weight: 700; letter-spacing: 0.24em; margin-top: 3px; }
+
+.header__tools { display: flex; align-items: center; gap: var(--s-2); }
+.header__cta { display: none; min-height: 42px; padding-inline: var(--s-4); font-size: var(--fs-sm); }
+
+/* Мовний перемикач з «повзунком» */
+.lang {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+.lang__pill {
+  position: absolute;
+  top: 3px; bottom: 3px; left: 3px;
+  width: calc(50% - 3px);
+  border-radius: var(--r-full);
+  background: var(--text);
+  transition: transform var(--t-2) var(--spring);
+}
+.lang[data-lang="en"] .lang__pill { transform: translateX(100%); }
+.lang__item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: var(--r-full);
+  color: var(--text-2);
+  transition: color var(--t-2);
+}
+.lang__item[aria-current="true"] { color: var(--bg); }
+
+/* Бургер */
+.burger {
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+}
+.burger span { display: block; width: 22px; height: 2px; border-radius: 2px; background: var(--text); transition: transform var(--t-2) var(--ease), opacity var(--t-1); }
+.burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Мобільне меню — на весь екран */
+.nav {
+  position: fixed;
+  inset: var(--header-h) 0 0 0;
+  z-index: -1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--s-6);
+  padding: var(--s-5) var(--gutter) calc(var(--s-6) + env(safe-area-inset-bottom));
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  overflow-y: auto;
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  transition: clip-path var(--t-3) var(--ease), visibility var(--t-3);
+}
+.header.is-open .nav { clip-path: inset(0); visibility: visible; }
+.nav__list { list-style: none; display: grid; gap: 2px; }
+.nav__link {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 8vw, 2.4rem);
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: color var(--t-1), opacity var(--t-2) var(--ease), transform var(--t-2) var(--ease);
+}
+.header.is-open .nav__link { opacity: 1; transform: none; transition-delay: calc(var(--i) * 45ms + 120ms); }
+.nav__num { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-3); font-weight: 600; }
+.nav__link:hover, .nav__link.active { color: var(--accent); }
+.nav__extra { display: grid; gap: var(--s-2); }
+
+@media (min-width: 640px) {
+  .header__cta { display: inline-flex; }
+}
+
+/* Десктоп: меню в рядок */
+@media (min-width: 1100px) {
+  .burger { display: none; }
+  .nav {
+    position: static;
+    z-index: auto;
+    flex-direction: row;
+    padding: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    overflow: visible;
+    clip-path: none;
+    visibility: visible;
+  }
+  .nav__list { display: flex; gap: 2px; }
+  .nav__extra, .nav__num { display: none; }
+  .nav__link {
+    position: relative;
+    padding: var(--s-2) var(--s-3);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--text-2);
+    opacity: 1;
+    transform: none;
+  }
+  /* «Мотузка» під активним пунктом */
+  .nav__link::after {
+    content: "";
+    position: absolute;
+    left: var(--s-3); right: var(--s-3); bottom: 2px;
+    height: 2px;
+    border-radius: 2px;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 6px, var(--hold-yellow) 6px 9px);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-2) var(--ease);
+  }
+  .nav__link:hover { color: var(--text); }
+  .nav__link:hover::after, .nav__link.active::after { transform: scaleX(1); }
+  .nav__link.active { color: var(--text); }
+}

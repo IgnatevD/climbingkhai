@@ -1,0 +1,11 @@
+.nf { position: relative; overflow: hidden; padding-block: var(--s-7) var(--s-9); }
+.nf__inner { position: relative; display: grid; justify-items: center; gap: var(--s-4); text-align: center; }
+.nf__inner .lead { margin-inline: auto; }
+.nf__fall { width: 110px; height: auto; }
+.nf__anchor { fill: none; stroke: var(--text-2); stroke-width: 4; }
+.nf__rope { stroke: var(--rope); stroke-width: 4; stroke-linecap: round; }
+.nf__swing { transform-origin: 60px 10px; animation: nf-swing 2.6s ease-in-out infinite alternate; }
+@keyframes nf-swing { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+.nf__head { fill: var(--hold-yellow); }
+.nf__body { fill: none; stroke: var(--text); stroke-width: 6; stroke-linecap: round; }
+.nf__code { font-family: var(--font-display); font-size: clamp(4rem, 20vw, 8rem); font-weight: 800; line-height: 1; color: var(--accent); }
