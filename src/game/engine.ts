@@ -26,6 +26,9 @@ export type Labels = {
   hintRight: string
   hintCenter: string
   broke: string
+  diag: string
+  barn: string
+  hintCross: string
 }
 
 type Hold = { lane: number; type: HoldType; broken?: boolean }
@@ -39,6 +42,7 @@ type Floater = { x: number; y: number; text: string; life: number; color: string
 export const METERS_PER_MOVE = 0.6
 const CLIP_EVERY = 5
 const LEVEL_MAX = 3
+const WARMUP_SEC = 180 // скільки триває плавний розгін до повної швидкості
 const MULT_MAX = 2
 
 const HOLD_GRIP: Record<HoldType, number> = { jug: 1, crimp: 0.68, sloper: 0.8, loose: 1 }
@@ -111,9 +115,10 @@ export class LeadGame {
   private lean = 0
   private vel = 0
   private grip = 1
-  private gripTime = 2.8
+  private gripTime = 6
   private score = 0
   private moves = 0
+  private playTime = 0 // секунди саме гри (без пауз) — для плавного розгону
   private clips = 0
   private combo = 0
   private missedRow = 0
@@ -127,7 +132,8 @@ export class LeadGame {
   private floaters: Floater[] = []
   private fall: null | { reason: FallReason; t: number; y: number; vy: number; restY: number | null; ground: number; anchor: Vec | null; spin: number; done: boolean } = null
   private warn: Hud['warn'] = null
-  private tutorial = 6
+  private tutorial = 14
+  private crossShown = 0
   private wallTile: HTMLCanvasElement | null = null
 
   private canvas: HTMLCanvasElement
@@ -169,7 +175,7 @@ export class LeadGame {
   }
   /** Для автотестів (лише у dev): стан балансу й наступного ряду */
   get debug() {
-    return { lean: this.lean, grip: this.grip, r: this.r, next: this.row(this.r + 1).holds.map((h) => h?.type ?? null), clipReady: this.clipBoltRow() !== null }
+    return { lean: this.lean, grip: this.grip, r: this.r, foot: this.path[this.r - 2] ?? 1, next: this.row(this.r + 1).holds.map((h) => h?.type ?? null), clipReady: this.clipBoltRow() !== null }
   }
   get isPaused() {
     return this.paused
@@ -212,6 +218,11 @@ export class LeadGame {
       this.grip = Math.max(0, this.grip - 0.08) // хапнув повітря — втратив трохи сил
       return
     }
+    // Опорна нога — вища з двох (зараз на ряду r-2). Рука навхрест від неї — стійко,
+    // з того самого боку — «двері»: тіло розвертає від стіни в протилежний бік.
+    const foot = this.path[this.r - 2] ?? 1
+    const cross = lane !== 1 && foot !== 1 && lane !== foot
+    const barn = lane !== 1 && lane === foot
     this.poseFrom = this.currentPose()
     this.poseT = 0
     this.r++
@@ -220,14 +231,30 @@ export class LeadGame {
 
     const side = lane - 1
     const lvl = this.level()
+    const warm = this.warm()
     if (hold.type === 'sloper') {
-      this.lean += side * 0.3 + (this.rand() - 0.5) * 0.36
+      this.lean += side * 0.3 + (this.rand() - 0.5) * lerp(0.18, 0.36, warm)
       if (side === 0) this.lean *= 0.7
       this.vel *= 0.65
     } else {
       if (side === 0) this.lean *= 0.42
       else this.lean += side * 0.5
       this.vel *= 0.3
+    }
+    if (cross) {
+      // Скрутка: корпус «замикається» на діагоналі рука — протилежна нога
+      this.lean *= 0.7
+      this.vel *= 0.4
+      if (this.crossShown < 3) {
+        this.crossShown++
+        this.float(this.holdPos(this.r, lane), this.labels.diag, this.c.ok)
+      }
+    } else if (barn) {
+      // «Двері»: рука й опорна нога з одного боку — тіло відчиняється в інший бік
+      this.lean -= side * lerp(0.26, 0.36, warm)
+      this.vel -= side * lerp(0.2, 0.35, warm)
+      this.float(this.holdPos(this.r, lane), this.labels.barn, this.c.warn)
+      this.shake = Math.max(this.shake, 4)
     }
     if (hold.type === 'loose') {
       hold.broken = true
@@ -244,7 +271,7 @@ export class LeadGame {
     this.score += Math.round(10 * lvl * mult)
     if (perfect && this.combo >= 2) this.float(this.holdPos(this.r, lane), `${this.labels.perfect} ×${mult.toFixed(1)}`, this.c.ok, 'perfect')
 
-    this.gripTime = (2.8 / lvl ** 0.75) * HOLD_GRIP[hold.type]
+    this.gripTime = this.gripBase() * HOLD_GRIP[hold.type]
     this.grip = 1
     if (this.tutorial > 0) this.tutorial--
     this.chalk(this.holdPos(this.r, lane))
@@ -281,7 +308,8 @@ export class LeadGame {
     this.lean = (this.rand() - 0.5) * 0.3
     this.vel = 0
     this.grip = 1
-    this.gripTime = 2.8
+    this.gripTime = 6
+    this.playTime = 0
     this.score = 0
     this.moves = 0
     this.clips = 0
@@ -291,7 +319,8 @@ export class LeadGame {
     this.particles = []
     this.floaters = []
     this.warn = null
-    this.tutorial = 6
+    this.tutorial = 14
+    this.crossShown = 0
     this.shake = 0
     this.pose = this.targetPose()
     this.poseFrom = this.pose
@@ -310,7 +339,7 @@ export class LeadGame {
     if (i <= 4) return { holds: [0, 1, 2].map((lane) => ({ lane, type: 'jug' as HoldType })), bolt }
     const depth = clamp((i - 5) / 60, 0, 1)
     const pick = (): HoldType => {
-      const w = { jug: 0.46 - 0.2 * depth, crimp: 0.3, sloper: 0.2 + 0.1 * depth, loose: i > 14 ? 0.04 + 0.12 * depth : 0 }
+      const w = { jug: 0.46 - 0.2 * depth, crimp: 0.3, sloper: 0.2 + 0.1 * depth, loose: i > 24 ? 0.04 + 0.12 * depth : 0 }
       let x = this.rand() * (w.jug + w.crimp + w.sloper + w.loose)
       for (const k of ['jug', 'crimp', 'sloper', 'loose'] as HoldType[]) {
         x -= w[k]
@@ -320,11 +349,13 @@ export class LeadGame {
     }
     const holds: (Hold | null)[] = [0, 1, 2].map((lane) => ({ lane, type: pick() }))
     // Здебільшого одна позиція порожня — треба обирати з того, що є
-    if (this.rand() < 0.62) holds[Math.floor(this.rand() * 3)] = null
-    // Хоча б один надійний зачіп у ряду
-    if (!holds.some((h) => h && h.type !== 'loose')) {
-      const h = holds.find(Boolean)!
-      h.type = 'jug'
+    if (this.rand() < lerp(0.35, 0.62, depth)) holds[Math.floor(this.rand() * 3)] = null
+    // Чесна траса: завжди є чим вирівнятись — надійний центр або надійні обидва боки
+    const solid = (h: Hold | null) => !!h && h.type !== 'loose'
+    if (!solid(holds[1]) && !(solid(holds[0]) && solid(holds[2]))) {
+      const fix = this.rand() < 0.5 ? 1 : holds[0] && holds[2] ? (holds[0].type === 'loose' ? 0 : 2) : 1
+      holds[fix] = { lane: fix, type: this.rand() < 0.6 ? 'jug' : 'crimp' }
+      if (fix !== 1 && !solid(holds[2 - fix])) holds[2 - fix] = { lane: 2 - fix, type: 'jug' }
     }
     return { holds, bolt }
   }
@@ -348,8 +379,24 @@ export class LeadGame {
   private camTarget() {
     return this.rowY(this.r) - this.H * 0.36
   }
+  /** Рівень для балів: росте з висотою (сервер перевіряє ту саму межу LEVEL_MAX) */
   private level() {
     return Math.min(LEVEL_MAX, 1 + this.moves / 35)
+  }
+  /**
+   * Розгін складності. Перші ~3 хвилини гра поступово пришвидшується: маятник гойдається повільно,
+   * сил вистачає надовго — є час розібратись. Далі плавно виходить на повну швидкість.
+   */
+  private warm() {
+    return clamp(this.playTime / WARMUP_SEC, 0, 1)
+  }
+  /** Рівень для фізики: висота дає ефект лише частково, поки триває розгін */
+  private physLevel() {
+    return 1 + (this.level() - 1) * this.warm() ** 2 // спершу ледь помітно, ближче до кінця розгону — швидше
+  }
+  /** Скільки секунд можна висіти на ручці: на старті ~6 с, після розгону ~2.8 с і менше з висотою */
+  private gripBase() {
+    return lerp(6, 2.8, this.warm()) / this.physLevel() ** 0.75
   }
   private mult() {
     return Math.min(MULT_MAX, 1 + Math.min(this.combo, 10) * 0.1)
@@ -429,11 +476,13 @@ export class LeadGame {
     if (this.fall) {
       this.updateFall(dt)
     } else {
-      const lvl = this.level()
-      // Перші метри — спокійні, далі маятник розгойдується все швидше
-      const w = 0.82 + 0.78 * (lvl - 1)
-      this.vel += this.lean * w * w * dt + (this.rand() - 0.5) * 0.4 * lvl * dt
-      this.vel *= Math.exp(-0.7 * dt)
+      this.playTime += dt
+      const lvl = this.physLevel()
+      const warm = this.warm()
+      // На старті маятник розгойдується повільно, далі — все швидше
+      const w = lerp(0.42, 0.82, warm * warm) + 0.78 * (lvl - 1)
+      this.vel += this.lean * w * w * dt + (this.rand() - 0.5) * lerp(0.12, 0.4, warm) * lvl * dt
+      this.vel *= Math.exp(-lerp(1.5, 0.7, warm) * dt) // на старті розгойдування швидше згасає
       this.lean += this.vel * dt
       this.grip -= dt / this.gripTime
       if (Math.abs(this.lean) >= 1) this.startFall('balance')
@@ -667,6 +716,20 @@ export class LeadGame {
       ctx.fill()
       ctx.globalAlpha = 1
     }
+    // Опорна нога — пунктирне кільце
+    const foot = this.path[this.r - 2] ?? 1
+    if (!this.fall && this.running && i === this.r - 2 && h.lane === foot) {
+      ctx.save()
+      ctx.globalAlpha = 0.9
+      ctx.setLineDash([4, 4])
+      ctx.strokeStyle = c.ok
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, 24 * s, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.restore()
+      ctx.globalAlpha = done ? 0.55 : 1
+    }
 
     ctx.fillStyle = color
     ctx.strokeStyle = 'rgba(0,0,0,.28)'
@@ -710,6 +773,34 @@ export class LeadGame {
     ctx.arc(p.x, p.y + (h.type === 'crimp' ? 0 : 1) * s, 2.2 * s, 0, Math.PI * 2)
     ctx.fill()
     ctx.globalAlpha = 1
+
+    // Наступний ряд: ✕ — навхрест від опорної ноги (стійко), ! — «двері»
+    if (next && !this.fall && this.running && h.lane !== 1 && foot !== 1) {
+      const cross = h.lane !== foot
+      const bx = p.x + 20 * s
+      const by = p.y - 16 * s
+      ctx.fillStyle = cross ? c.ok : c.warn
+      ctx.beginPath()
+      ctx.arc(bx, by, 8 * s, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = '#11161b'
+      ctx.lineWidth = 2.2 * s
+      ctx.lineCap = 'round'
+      ctx.beginPath()
+      if (cross) {
+        ctx.moveTo(bx - 3.2 * s, by - 3.2 * s)
+        ctx.lineTo(bx + 3.2 * s, by + 3.2 * s)
+        ctx.moveTo(bx + 3.2 * s, by - 3.2 * s)
+        ctx.lineTo(bx - 3.2 * s, by + 3.2 * s)
+      } else {
+        ctx.moveTo(bx, by - 4 * s)
+        ctx.lineTo(bx, by + 1 * s)
+        ctx.moveTo(bx, by + 3.8 * s)
+        ctx.lineTo(bx, by + 4 * s)
+      }
+      ctx.stroke()
+      ctx.lineCap = 'butt'
+    }
 
     // Кільце сил довкола зачепа, на якому висить верхня рука
     if (i === this.r && h.lane === this.path[this.r] && !this.fall && this.running) {
@@ -879,7 +970,8 @@ export class LeadGame {
 
     // Підказка для перших ходів
     if (this.tutorial > 0 && this.running) {
-      const hint = Math.abs(this.lean) < 0.18 ? this.labels.hintCenter : this.lean > 0 ? this.labels.hintRight : this.labels.hintLeft
+      const balance = Math.abs(this.lean) < 0.18 ? this.labels.hintCenter : this.lean > 0 ? this.labels.hintRight : this.labels.hintLeft
+      const hint = this.tutorial <= 8 && Math.abs(this.lean) < 0.5 ? this.labels.hintCross : balance
       ctx.font = `700 13px ${getComputedStyle(document.body).fontFamily}`
       ctx.textAlign = 'center'
       ctx.lineWidth = 4

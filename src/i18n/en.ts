@@ -301,6 +301,7 @@ export const en: Dict = {
     how: [
       { t: 'Pick a hold', d: 'The next row has up to three holds: left, middle, right.' },
       { t: 'Keep balance', d: 'Leaning right — grab left, leaning left — grab right, level — grab the middle.' },
+      { t: 'Twist in', d: 'Left hand with right foot, right hand with left. A ✕ hold (opposite your standing foot) steadies you, a ! hold swings you open like a barn door.' },
       { t: 'Clip in', d: 'Next to a quickdraw, hit the carabiner. Miss two in a row and you fall.' },
       { t: 'Keep moving', d: 'The ring around the hold is your strength. It gets faster as you climb.' },
     ],
@@ -329,6 +330,9 @@ export const en: Dict = {
       hintRight: 'Leaning right → grab the left hold',
       hintCenter: 'Level → grab the middle',
       broke: 'Crack!',
+      diag: 'Twist ✕',
+      barn: 'Barn door!',
+      hintCross: 'Left hand — right foot: take the ✕ hold',
     },
     promoTitle: 'Lead game: who climbs higher?',
     promoText: 'An endless lead route right in your browser. Keep your balance, clip in and make the club leaderboard.',
