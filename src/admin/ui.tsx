@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { fmtDate, passInfo, type Member } from './model'
 
 /** Плашка стану абонемента: «5 з 8 · до 30.11» */
@@ -8,8 +8,12 @@ export function PassChip({ m, date }: { m: Member; date?: string }) {
   const p = m.pass!
   const until = fmtDate(p.until, { day: '2-digit', month: '2-digit' })
   if (info.state === 'expired') {
-    const why = p.sessions - p.used <= 0 ? 'Абонемент: заняття скінчились' : `Абонемент скінчився ${until}`
-    return <span className="chip chip--expired" title={`Абонемент: ${p.used} з ${p.sessions}`}>{why}</span>
+    const why = info.reason === 'used' ? 'Абонемент: заняття скінчились' : `Абонемент скінчився ${until}`
+    return <span className="chip chip--expired" title={`Використано ${p.used} з ${p.sessions}, діяв ${fmtDate(p.from)} — ${fmtDate(p.until)}`}>{why}</span>
+  }
+  if (info.state === 'future') {
+    const from = fmtDate(p.from, { day: '2-digit', month: '2-digit' })
+    return <span className="chip chip--ok" title={`Абонемент на ${p.sessions} занять, діє ${fmtDate(p.from)} — ${fmtDate(p.until)}`}>{p.sessions - p.used} з {p.sessions} · з {from} до {until}</span>
   }
   return (
     <span className={`chip chip--${info.state}`} title={`Використано ${p.used} з ${p.sessions}, діє до ${fmtDate(p.until)}`}>
@@ -81,6 +85,7 @@ const PATHS = {
   print: 'M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2M7 14h10v6H7z',
   ticket: 'M4 8a2 2 0 0 0 2-2h12a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H6a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4zM10 6v12',
   close: 'M6 6l12 12M18 6L6 18',
+  down: 'M6.5 9.5l5.5 5.5 5.5-5.5',
   calendar: 'M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM4 10h16M8 4v4M16 4v4',
 } as const
 export type IconName = keyof typeof PATHS
@@ -99,5 +104,122 @@ export function CheckBox({ on }: { on: boolean }) {
     <span className={`adm-cb${on ? ' is-on' : ''}`} aria-hidden="true">
       <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
     </span>
+  )
+}
+
+/* ---------- Власний випадний список ----------
+   Виглядає однаково на iPhone, Android і ноутбуці, керується з клавіатури
+   (↑ ↓ Enter Esc, перша літера), закривається тапом поза ним.
+   Працює і як керований (value + onChange), і в формі (name + defaultValue). */
+export type Option<T extends string> = { value: T; label: string; hint?: string }
+
+export function Select<T extends string>({
+  value, defaultValue, onChange, options, name, label, className, prefix,
+}: {
+  value?: T
+  defaultValue?: T
+  onChange?: (v: T) => void
+  options: Option<T>[]
+  name?: string
+  label: string
+  className?: string
+  prefix?: string
+}) {
+  const [inner, setInner] = useState<T>(defaultValue ?? options[0].value)
+  const current = value ?? inner
+  const [open, setOpen] = useState(false)
+  const [up, setUp] = useState(false)
+  const [active, setActive] = useState(0)
+  const root = useRef<HTMLDivElement>(null)
+  const btn = useRef<HTMLButtonElement>(null)
+  const id = useId()
+  const selected = options.find((o) => o.value === current) ?? options[0]
+
+  const choose = (v: T) => {
+    if (value === undefined) setInner(v)
+    onChange?.(v)
+    setOpen(false)
+    btn.current?.focus()
+  }
+
+  const show = () => {
+    const r = btn.current?.getBoundingClientRect()
+    if (r) setUp(r.bottom + Math.min(options.length * 46 + 16, 300) > window.innerHeight - 80 && r.top > 260)
+    setActive(Math.max(0, options.findIndex((o) => o.value === current)))
+    setOpen(true)
+  }
+
+  /* Закрити тапом поза списком */
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => { if (!root.current?.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [open])
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (!open) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) { e.preventDefault(); show() }
+      return
+    }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setOpen(false) }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setActive((a) => Math.min(options.length - 1, a + 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((a) => Math.max(0, a - 1)) }
+    else if (e.key === 'Home') { e.preventDefault(); setActive(0) }
+    else if (e.key === 'End') { e.preventDefault(); setActive(options.length - 1) }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(options[active].value) }
+    else if (e.key === 'Tab') setOpen(false)
+    else if (e.key.length === 1) {
+      const i = options.findIndex((o) => o.label.toLowerCase().startsWith(e.key.toLowerCase()))
+      if (i >= 0) setActive(i)
+    }
+  }
+
+  return (
+    <div ref={root} className={`adm-select${open ? ' is-open' : ''}${className ? ' ' + className : ''}`}>
+      <button
+        ref={btn}
+        type="button"
+        className="adm-select__btn"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={`${id}-list`}
+        aria-label={`${label}: ${selected.label}`}
+        onClick={() => (open ? setOpen(false) : show())}
+        onKeyDown={onKey}
+      >
+        {prefix && <span className="adm-select__prefix">{prefix}</span>}
+        <span className="adm-select__value">{selected.label}</span>
+        <Icon name="down" size={18} className="adm-select__chev" />
+      </button>
+      {open && (
+        <ul
+          id={`${id}-list`}
+          role="listbox"
+          aria-label={label}
+          className={`adm-select__list${up ? ' is-up' : ''}`}
+          aria-activedescendant={`${id}-${active}`}
+        >
+          {options.map((o, i) => (
+            <li
+              key={o.value}
+              id={`${id}-${i}`}
+              role="option"
+              aria-selected={o.value === current}
+              className={i === active ? 'is-active' : ''}
+              onPointerEnter={() => setActive(i)}
+              onClick={() => choose(o.value)}
+            >
+              <span>
+                {o.label}
+                {o.hint && <small>{o.hint}</small>}
+              </span>
+              {o.value === current && <Icon name="check" size={16} />}
+            </li>
+          ))}
+        </ul>
+      )}
+      {name && <input type="hidden" name={name} value={current} />}
+    </div>
   )
 }

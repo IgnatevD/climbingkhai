@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { api } from './api'
 import { useAdmin } from './context'
 import { GROUPS, GROUP_LABEL, addDays, defaultVisit, fmtDate, fromISO, money, toISO, today, type Group, type Session, type Visit } from './model'
-import { Icon } from './ui'
+import { Icon, Select } from './ui'
 
 type Filter = 'all' | Group
 
@@ -315,9 +315,7 @@ export function Report() {
               <span className="adm-cb adm-cb--add" aria-hidden="true"><Icon name="plus" size={16} /></span>
               <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Нова людина у звіт" aria-label="Ім'я нового учасника" maxLength={80} />
               {filter === 'all' && (
-                <select value={newGroup} onChange={(e) => setNewGroup(e.target.value as Group)} aria-label="Група">
-                  {GROUPS.map((g) => <option key={g} value={g}>{GROUP_LABEL[g]}</option>)}
-                </select>
+                <Select<Group> className="rep-add__group" label="Група" value={newGroup} onChange={setNewGroup} options={GROUPS.map((g) => ({ value: g, label: GROUP_LABEL[g] }))} />
               )}
               <button className="btn btn--primary btn--sm" disabled={!newName.trim()}>Додати</button>
             </form>

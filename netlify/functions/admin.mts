@@ -4,8 +4,12 @@
  * Доступ: логін і пароль із змінних середовища Netlify
  *   ADMIN_LOGIN + ADMIN_PASSWORD           — один обліковий запис, або
  *   ADMIN_USERS="anna:пароль1;oleg:пароль2" — кілька тренерів.
- *   ADMIN_SECRET (необов'язково)           — ключ підпису сесій; без нього похідний від паролів
- *                                             (зміна пароля автоматично розлогінює всіх).
+ *   SUPERADMIN_LOGIN + SUPERADMIN_PASSWORD — резервний вхід суперадміна: працює завжди, навіть якщо
+ *                                             адмін змінив і забув свій пароль; може скинути пароль будь-кому.
+ *                                             Змінюється лише в налаштуваннях Netlify (не з адмінки).
+ *   ADMIN_SECRET (необов'язково)           — ключ підпису сесій.
+ * Змінені в адмінці паролі зберігаються в Blobs (ключ "auth") як scrypt-хеш і мають пріоритет над змінними.
+ * Після зміни пароля старі сесії цього користувача стають недійсними.
  * Сесія — підписаний HttpOnly-cookie на 30 днів. Після 8 невдалих спроб входу з IP — пауза 15 хв.
  *
  * Дані — у Netlify Blobs (сховище "club"):
@@ -14,7 +18,7 @@
  *   s/<дата>/<група> — Session (відмітки одного заняття)
  * Записи з перевіркою ETag, тож двоє тренерів одночасно не затруть зміни одне одного.
  */
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { getStore } from '@netlify/blobs'
 import type { Config, Context } from '@netlify/functions'
 import {
@@ -41,7 +45,12 @@ const json = (body: unknown, status = 200, headers: Record<string, string> = {})
 const fail = (status: number, error: string) => json({ error }, status)
 
 /* ---------- Облікові записи й сесії ---------- */
-function users(): Record<string, string> {
+type Role = 'admin' | 'super'
+type AuthRec = { salt: string; hash: string; updatedAt: number }
+type AuthDoc = { users: Record<string, AuthRec> }
+
+/** Тренери зі змінних середовища */
+function envUsers(): Record<string, string> {
   const map: Record<string, string> = {}
   const multi = Netlify.env.get('ADMIN_USERS')
   if (multi) {
@@ -56,8 +65,17 @@ function users(): Record<string, string> {
   return map
 }
 
-function secret(u: Record<string, string>) {
-  return Netlify.env.get('ADMIN_SECRET') || createHash('sha256').update(JSON.stringify(u)).digest('hex')
+/** Суперадмін — резервний ключ, лише зі змінних середовища */
+function superCreds(): { login: string; password: string } | null {
+  const login = Netlify.env.get('SUPERADMIN_LOGIN')?.trim()
+  const password = Netlify.env.get('SUPERADMIN_PASSWORD')
+  return login && password ? { login, password } : null
+}
+
+const loadAuth = async () => ((await store().get('auth', { type: 'json' })) as AuthDoc | null) ?? { users: {} }
+
+function secret() {
+  return Netlify.env.get('ADMIN_SECRET') || createHash('sha256').update(JSON.stringify([envUsers(), superCreds()])).digest('hex')
 }
 
 const b64 = (s: string) => Buffer.from(s).toString('base64url')
@@ -69,21 +87,43 @@ function safeEqual(a: string, b: string) {
   return timingSafeEqual(x, y)
 }
 
-function makeToken(user: string, key: string) {
-  const payload = b64(JSON.stringify({ u: user, exp: Date.now() + SESSION_DAYS * 86400000 }))
-  return `${payload}.${sign(payload, key)}`
+function hashPassword(password: string, salt = randomBytes(16).toString('hex')): AuthRec {
+  return { salt, hash: scryptSync(password, salt, 32).toString('hex'), updatedAt: Date.now() }
+}
+const checkHash = (password: string, rec: AuthRec) => safeEqual(scryptSync(password, rec.salt, 32).toString('hex'), rec.hash)
+
+/** Перевірка логіна/пароля → роль або null */
+async function verify(login: string, password: string, auth?: AuthDoc): Promise<{ role: Role; v: number } | null> {
+  const sup = superCreds()
+  if (sup && login === sup.login) return safeEqual(password, sup.password) ? { role: 'super', v: 0 } : null
+  const rec = (auth ?? (await loadAuth())).users[login]
+  if (rec) return checkHash(password, rec) ? { role: 'admin', v: rec.updatedAt } : null
+  const env = envUsers()
+  return login in env && safeEqual(password, env[login]) ? { role: 'admin', v: 0 } : null
 }
 
-function readUser(req: Request): string | null {
-  const u = users()
-  if (!Object.keys(u).length) return null
+async function configured() {
+  return !!superCreds() || Object.keys(envUsers()).length > 0 || Object.keys((await loadAuth()).users).length > 0
+}
+
+function makeToken(user: string, role: Role, v: number) {
+  const payload = b64(JSON.stringify({ u: user, r: role, v, exp: Date.now() + SESSION_DAYS * 86400000 }))
+  return `${payload}.${sign(payload, secret())}`
+}
+
+/** Користувач із cookie; сесія недійсна, якщо пароль змінили після входу */
+async function readUser(req: Request): Promise<{ user: string; role: Role } | null> {
   const raw = req.headers.get('cookie')?.split(/;\s*/).find((c) => c.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1)
   if (!raw) return null
   const [payload, sig] = raw.split('.')
-  if (!payload || !sig || !safeEqual(sig, sign(payload, secret(u)))) return null
+  if (!payload || !sig || !safeEqual(sig, sign(payload, secret()))) return null
   try {
-    const { u: user, exp } = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { u: string; exp: number }
-    return exp > Date.now() && user in u ? user : null
+    const { u, r, v, exp } = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { u: string; r: Role; v: number; exp: number }
+    if (exp <= Date.now()) return null
+    if (r === 'super') return superCreds()?.login === u ? { user: u, role: 'super' } : null
+    const rec = (await loadAuth()).users[u]
+    if (rec) return rec.updatedAt === v ? { user: u, role: 'admin' } : null
+    return u in envUsers() && v === 0 ? { user: u, role: 'admin' } : null
   } catch {
     return null
   }
@@ -91,6 +131,9 @@ function readUser(req: Request): string | null {
 
 const cookie = (value: string, maxAge: number) =>
   `${COOKIE}=${value}; Path=/api/admin; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`
+
+const LOGIN_RE = /^[\p{L}\p{N}._@-]{3,40}$/u
+const MIN_PASSWORD = 8
 
 /* ---------- Запис із перевіркою ETag ---------- */
 async function mutate<T>(key: string, init: () => T, fn: (cur: T) => T | Promise<T>): Promise<T> {
@@ -136,8 +179,7 @@ export default async (req: Request, context: Context) => {
   try {
     /* Вхід */
     if (route === 'login' && method === 'POST') {
-      const u = users()
-      if (!Object.keys(u).length) return fail(503, 'Адмінку ще не налаштовано: додайте ADMIN_LOGIN і ADMIN_PASSWORD у Netlify')
+      if (!(await configured())) return fail(503, 'Адмінку ще не налаштовано: додайте ADMIN_LOGIN і ADMIN_PASSWORD у Netlify')
       const ip = context.ip || 'unknown'
       const rlKey = `rl/${createHash('sha256').update(ip).digest('hex').slice(0, 16)}`
       const s = store()
@@ -146,7 +188,7 @@ export default async (req: Request, context: Context) => {
 
       const { login, password } = await body<{ login?: string; password?: string }>(req)
       const name = str(login, 60)
-      const ok = name in u && safeEqual(String(password ?? ''), u[name])
+      const ok = await verify(name, String(password ?? ''))
       if (!ok) {
         const fresh = Date.now() - rl.since > LOCK_MS
         await s.setJSON(rlKey, { fails: fresh ? 1 : rl.fails + 1, since: fresh ? Date.now() : rl.since })
@@ -154,20 +196,71 @@ export default async (req: Request, context: Context) => {
         return fail(401, 'Невірний логін або пароль')
       }
       await s.delete(rlKey)
-      return json({ user: name }, 200, { 'set-cookie': cookie(makeToken(name, secret(u)), SESSION_DAYS * 86400) })
+      return json({ user: name, role: ok.role }, 200, { 'set-cookie': cookie(makeToken(name, ok.role, ok.v), SESSION_DAYS * 86400) })
     }
 
     if (route === 'logout' && method === 'POST') return json({ ok: true }, 200, { 'set-cookie': cookie('', 0) })
 
     /* Усе інше — лише для авторизованих */
-    const user = readUser(req)
-    if (!user) return fail(401, 'Потрібен вхід')
+    const me = await readUser(req)
+    if (!me) return fail(401, 'Потрібен вхід')
+    const { user, role } = me
 
-    if (route === 'me') return json({ user })
+    if (route === 'me') return json({ user, role })
 
     if (route === 'state' && method === 'GET') {
       const [members, settings] = await Promise.all([loadMembers(), loadSettings()])
-      return json({ user, members, settings })
+      return json({ user, role, members, settings })
+    }
+
+    /* Зміна власного пароля */
+    if (route === 'password' && method === 'POST') {
+      if (role === 'super') return fail(400, 'Пароль суперадміна змінюється лише в налаштуваннях Netlify (SUPERADMIN_PASSWORD)')
+      const b = await body<{ current?: string; next?: string }>(req)
+      const next = String(b.next ?? '')
+      if (next.length < MIN_PASSWORD) return fail(400, `Новий пароль — щонайменше ${MIN_PASSWORD} символів`)
+      if (!(await verify(user, String(b.current ?? '')))) return fail(400, 'Поточний пароль невірний')
+      const rec = hashPassword(next)
+      await mutate<AuthDoc>('auth', () => ({ users: {} }), (doc) => ({ users: { ...doc.users, [user]: rec } }))
+      // Нова сесія з новою «версією» пароля — інші пристрої доведеться перелогінити
+      return json({ ok: true }, 200, { 'set-cookie': cookie(makeToken(user, 'admin', rec.updatedAt), SESSION_DAYS * 86400) })
+    }
+
+    /* Облікові записи — лише суперадмін */
+    if (route === 'users') {
+      if (role !== 'super') return fail(403, 'Лише для суперадміна')
+      if (method === 'GET') {
+        const env = envUsers()
+        const auth = await loadAuth()
+        const logins = [...new Set([...Object.keys(env), ...Object.keys(auth.users)])].sort((a, b) => a.localeCompare(b, 'uk'))
+        return json({
+          users: logins.map((login) => ({
+            login,
+            fromEnv: login in env,
+            changedAt: auth.users[login] ? new Date(auth.users[login].updatedAt).toISOString() : null,
+          })),
+        })
+      }
+      if (method === 'PUT') {
+        const b = await body<{ login?: string; password?: string }>(req)
+        const login = str(b.login, 40)
+        const password = String(b.password ?? '')
+        if (!LOGIN_RE.test(login)) return fail(400, 'Логін: 3–40 символів — літери, цифри, . _ - @')
+        if (login === superCreds()?.login) return fail(400, 'Цей логін зайнятий суперадміном')
+        if (password.length < MIN_PASSWORD) return fail(400, `Пароль — щонайменше ${MIN_PASSWORD} символів`)
+        const rec = hashPassword(password)
+        await mutate<AuthDoc>('auth', () => ({ users: {} }), (doc) => ({ users: { ...doc.users, [login]: rec } }))
+        return json({ ok: true })
+      }
+      if (method === 'DELETE') {
+        const login = q.get('login') ?? ''
+        await mutate<AuthDoc>('auth', () => ({ users: {} }), (doc) => {
+          const users = { ...doc.users }
+          delete users[login]
+          return { users }
+        })
+        return json({ ok: true, fromEnv: login in envUsers() })
+      }
     }
 
     /* Учасники */

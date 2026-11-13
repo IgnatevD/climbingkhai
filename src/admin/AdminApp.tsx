@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { I18nProvider } from '../i18n'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { Carabiner } from '../components/Icons'
-import { api, ApiError } from './api'
+import { api, ApiError, type Role } from './api'
 import { Ctx, type AdminCtx } from './context'
 import type { Member, Settings } from './model'
 import { Attendance } from './Attendance'
@@ -39,7 +39,7 @@ export default function AdminApp() {
   )
 }
 
-type Data = { user: string; members: Member[]; settings: Settings }
+type Data = { user: string; role: Role; members: Member[]; settings: Settings }
 
 function Gate() {
   const [data, setData] = useState<Data | null>(null)
@@ -147,7 +147,7 @@ function Shell({ data, setData, onLogout }: { data: Data; setData: React.Dispatc
   const setSettings = useCallback((settings: Settings) => setData((d) => (d ? { ...d, settings } : d)), [setData])
 
   const ctx = useMemo<AdminCtx>(
-    () => ({ user: data.user, members: data.members, settings: data.settings, mergeMembers, removeMember, setSettings, notify }),
+    () => ({ user: data.user, role: data.role, members: data.members, settings: data.settings, mergeMembers, removeMember, setSettings, notify }),
     [data, mergeMembers, removeMember, setSettings, notify],
   )
 
@@ -162,7 +162,7 @@ function Shell({ data, setData, onLogout }: { data: Data; setData: React.Dispatc
         <header className="adm-top">
           <div className="adm-top__row">
             <Link to="/" className="adm-brand" title="На сайт"><Carabiner /> <span>Облік <b>ХАІ</b></span></Link>
-            {/* На ноутбуці вкладки — у шапці, на телефоні — внизу екрана, під великим пальцем */}
+            {/* На ноутбуці вкладки — у шапці, на телефоні — другим рядком шапки (низ екрана займає плашка Netlify) */}
             <nav className="adm-tabs" aria-label="Розділи">
               {TABS.map((t) => (
                 <button
@@ -180,7 +180,7 @@ function Shell({ data, setData, onLogout }: { data: Data; setData: React.Dispatc
             </nav>
             <div className="adm-top__right">
               <ThemeToggle />
-              <button type="button" className="adm-icon adm-logout" onClick={logout} title={`Вийти (${data.user})`} aria-label="Вийти">
+              <button type="button" className="adm-icon adm-logout" onClick={logout} title={`Вийти (${data.user}${data.role === 'super' ? ', суперадмін' : ''})`} aria-label="Вийти">
                 <Icon name="logout" />
               </button>
             </div>

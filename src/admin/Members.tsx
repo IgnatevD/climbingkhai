@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from './api'
 import { useAdmin } from './context'
 import { GROUPS, GROUP_LABEL, addDays, fmtDate, money, passInfo, today, type Group, type Member } from './model'
-import { Dialog, Field, Icon, PassChip } from './ui'
+import { Dialog, Field, Icon, PassChip, Select } from './ui'
 
 type Filter = 'all' | Group
 type Sort = 'name' | 'pass' | 'visit'
@@ -27,7 +27,7 @@ export function Members() {
         (!q || m.name.toLowerCase().includes(q) || m.phone?.includes(q)) &&
         (!onlyAttention || attention(m)),
     )
-    const rank = { expired: 0, low: 1, ok: 2, none: 3 }
+    const rank = { expired: 0, low: 1, ok: 2, future: 2, none: 3 }
     return out.sort((a, b) =>
       sort === 'pass'
         ? rank[passInfo(a).state] - rank[passInfo(b).state] || a.name.localeCompare(b.name, 'uk')
@@ -58,7 +58,7 @@ export function Members() {
         <button type="button" className="btn btn--primary btn--sm" onClick={() => setEdit({ group: filter === 'kids' ? 'kids' : 'adult' })}><Icon name="helmet" size={18} /> Додати</button>
       </div>
 
-      <div className="adm-toolbar">
+      <div className="adm-toolbar mem-toolbar">
         <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Пошук за ім'ям або телефоном" aria-label="Пошук" />
         <div className="adm-seg" role="group" aria-label="Група">
           {(['all', ...GROUPS] as Filter[]).map((f) => (
@@ -71,14 +71,18 @@ export function Members() {
           <input type="checkbox" checked={onlyAttention} onChange={(e) => setOnlyAttention(e.target.checked)} />
           Закінчується абонемент <span className="chip chip--low">{attentionCount}</span>
         </label>
-        <label className="adm-sort">
-          Сортувати:
-          <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-            <option value="name">за ім'ям</option>
-            <option value="pass">за абонементом</option>
-            <option value="visit">за останнім візитом</option>
-          </select>
-        </label>
+        <Select<Sort>
+          className="adm-sort"
+          label="Сортування"
+          prefix="Сортувати:"
+          value={sort}
+          onChange={setSort}
+          options={[
+            { value: 'name', label: "за ім'ям" },
+            { value: 'pass', label: 'за абонементом', hint: 'спершу ті, кому пора продовжити' },
+            { value: 'visit', label: 'за останнім візитом' },
+          ]}
+        />
       </div>
 
       {list.length === 0 ? (
@@ -163,9 +167,7 @@ function MemberDialog({ member, onClose }: { member: Partial<Member> | null; onC
         <form className="adm-form" onSubmit={submit}>
           <Field label="Ім'я та прізвище *"><input name="name" defaultValue={member.name} required maxLength={80} autoFocus /></Field>
           <Field label="Група">
-            <select name="group" defaultValue={member.group ?? 'adult'}>
-              {GROUPS.map((g) => <option key={g} value={g}>{GROUP_LABEL[g]}</option>)}
-            </select>
+            <Select<Group> name="group" label="Група" defaultValue={member.group ?? 'adult'} options={GROUPS.map((g) => ({ value: g, label: GROUP_LABEL[g] }))} />
           </Field>
           <Field label="Телефон"><input name="phone" type="tel" defaultValue={member.phone} maxLength={30} placeholder="+380…" /></Field>
           <Field label="Нотатка" hint="Напр.: батьки, медичні обмеження, рівень"><textarea name="note" defaultValue={member.note} maxLength={300} rows={2} /></Field>

@@ -89,16 +89,23 @@ export function nextTrainingDay(from: string, dir: 1 | -1, days: number[]) {
 }
 
 /* ---------- Абонемент ---------- */
-export type PassState = 'none' | 'ok' | 'low' | 'expired'
-export type PassInfo = { state: PassState; left: number; daysLeft: number }
+export type PassState = 'none' | 'ok' | 'low' | 'future' | 'expired'
+export type PassInfo = { state: PassState; left: number; daysLeft: number; reason?: 'used' | 'date' }
 
-/** Стан абонемента на дату: ok — все добре, low — лишилось ≤1 заняття або ≤3 дні, expired — скінчився */
+/**
+ * Стан абонемента на дату:
+ *   ok — все добре; low — лишилось ≤1 заняття або ≤3 дні;
+ *   future — дата раніша за початок абонемента (напр. оформили сьогодні, а відмічаєте вчорашнє заняття) — ним можна користуватись;
+ *   expired — заняття скінчились (reason: 'used') або минула дата закінчення (reason: 'date').
+ */
 export function passInfo(m: Pick<Member, 'pass'>, date = today()): PassInfo {
   const p = m.pass
   if (!p) return { state: 'none', left: 0, daysLeft: 0 }
   const left = p.sessions - p.used
   const daysLeft = daysBetween(date, p.until)
-  if (left <= 0 || daysLeft < 0 || date < p.from) return { state: 'expired', left: Math.max(0, left), daysLeft }
+  if (left <= 0) return { state: 'expired', left: 0, daysLeft, reason: 'used' }
+  if (daysLeft < 0) return { state: 'expired', left, daysLeft, reason: 'date' }
+  if (date < p.from) return { state: 'future', left, daysLeft }
   if (left <= 1 || daysLeft <= 3) return { state: 'low', left, daysLeft }
   return { state: 'ok', left, daysLeft }
 }

@@ -14,7 +14,13 @@ function netlifyFunctionsDev(env: Record<string, string>): Plugin {
     [/^\/api\/instagram(\?|$)/, '/netlify/functions/instagram.mts'],
   ]
   const usingDefaults = !env.ADMIN_USERS && !(env.ADMIN_LOGIN && env.ADMIN_PASSWORD)
-  const vars: Record<string, string> = usingDefaults ? { ...env, ADMIN_LOGIN: 'admin', ADMIN_PASSWORD: 'admin' } : env
+  const vars: Record<string, string> = {
+    // Локальний суперадмін (резервний вхід) — на Netlify задається змінними SUPERADMIN_LOGIN / SUPERADMIN_PASSWORD
+    SUPERADMIN_LOGIN: 'superadmin',
+    SUPERADMIN_PASSWORD: 'superadmin1985',
+    ...env,
+    ...(usingDefaults ? { ADMIN_LOGIN: 'admin', ADMIN_PASSWORD: 'admin' } : {}),
+  }
 
   const readBody = async (req: IncomingMessage) => {
     const chunks: Buffer[] = []
@@ -31,7 +37,7 @@ function netlifyFunctionsDev(env: Record<string, string>): Plugin {
         setTimeout(() => {
           server.config.logger.info(
             usingDefaults
-              ? '\n  🧗 Адмінка: /admin  (локальний вхід: admin / admin — змінити можна в .env.local)\n'
+              ? `\n  🧗 Адмінка: /admin  (вхід: admin / admin, суперадмін: ${vars.SUPERADMIN_LOGIN} / ${vars.SUPERADMIN_PASSWORD})\n`
               : '\n  🧗 Адмінка: /admin  (логін і пароль з .env.local)\n',
           )
         }, 50)

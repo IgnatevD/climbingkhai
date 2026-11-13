@@ -1,5 +1,8 @@
 import type { Group, Member, Session, Settings, Visit } from './model'
 
+export type Role = 'admin' | 'super'
+export type AdminUser = { login: string; fromEnv: boolean; changedAt: string | null }
+
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -31,10 +34,15 @@ const put = (body: unknown): RequestInit => ({ method: 'PUT', body: JSON.stringi
 const post = (body: unknown): RequestInit => ({ method: 'POST', body: JSON.stringify(body) })
 
 export const api = {
-  me: () => call<{ user: string }>('me'),
-  login: (login: string, password: string) => call<{ user: string }>('login', post({ login, password })),
+  me: () => call<{ user: string; role: Role }>('me'),
+  login: (login: string, password: string) => call<{ user: string; role: Role }>('login', post({ login, password })),
   logout: () => call('logout', { method: 'POST' }),
-  state: () => call<{ user: string; members: Member[]; settings: Settings }>('state'),
+  state: () => call<{ user: string; role: Role; members: Member[]; settings: Settings }>('state'),
+
+  changePassword: (current: string, next: string) => call('password', post({ current, next })),
+  users: () => call<{ users: AdminUser[] }>('users'),
+  saveUser: (login: string, password: string) => call('users', put({ login, password })),
+  deleteUser: (login: string) => call<{ fromEnv: boolean }>('users?login=' + encodeURIComponent(login), { method: 'DELETE' }),
 
   saveMember: (m: Partial<Member>) => call<{ member: Member }>('member', put(m)),
   deleteMember: (id: string) => call('member?id=' + encodeURIComponent(id), { method: 'DELETE' }),

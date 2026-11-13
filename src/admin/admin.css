@@ -6,7 +6,10 @@
 
 .adm, .adm-dialog, .adm-login {
   --adm-top-h: 56px;
-  --adm-nav-h: 64px;
+  --adm-nav-h: 52px;   /* рядок вкладок під шапкою (телефон) */
+  /* Знизу праворуч Netlify малює плашку 202×64px в ізольованому фреймі —
+     плаваючі панелі піднімаємо над нею. Якщо плашку вимкнути, можна поставити 0px. */
+  --adm-badge-h: 64px;
   --adm-r: 14px;
   --adm-gap: 12px;
   --adm-danger: #e5484d;
@@ -18,7 +21,8 @@
   background: var(--bg);
   color: var(--text);
   overflow-x: clip;
-  padding-bottom: calc(var(--adm-nav-h) + 72px + env(safe-area-inset-bottom));
+  /* місце під панель підсумків і плашку Netlify */
+  padding-bottom: calc(var(--adm-badge-h) + 72px + env(safe-area-inset-bottom));
 }
 
 /* ---------- Поля вводу ---------- */
@@ -114,31 +118,29 @@
 .adm-top {
   position: sticky; top: 0; z-index: 30;
   padding-top: env(safe-area-inset-top);
-  /* без backdrop-filter на телефоні: інакше нижня навігація (position: fixed) «прилипає» до шапки */
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 .adm-top__row, .adm-main { width: min(1180px, 100% - 32px); margin-inline: auto; }
-.adm-top__row { height: var(--adm-top-h); display: flex; align-items: center; justify-content: space-between; gap: var(--adm-gap); }
+.adm-top__row { min-height: var(--adm-top-h); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: var(--adm-gap); }
+.adm-brand, .adm-top__right { height: var(--adm-top-h); }
 .adm-brand { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; white-space: nowrap; }
 .adm-brand b { color: var(--accent); }
 .adm-top__right { display: flex; align-items: center; gap: 8px; }
 .adm-top__right .theme-toggle { transform: scale(0.8); transform-origin: right center; }
 .adm-logout { width: 40px; height: 40px; }
 
-/* Нижня навігація (телефон) */
+/* Вкладки (телефон): другий рядок шапки — нижній край екрана лишаємо вільним */
 .adm-tabs {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  order: 3; flex: 1 1 100%;
   display: grid; grid-template-columns: repeat(4, 1fr);
-  height: calc(var(--adm-nav-h) + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
-  background: var(--glass-strong);
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  height: var(--adm-nav-h);
+  margin-inline: -16px;
   border-top: 1px solid var(--border);
 }
 .adm-tab {
   position: relative;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   min-width: 0;
   font-size: 11px; font-weight: 700;
   color: var(--text-3);
@@ -148,8 +150,8 @@
 .adm-tab__short { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-tab.is-active { color: var(--accent); }
 .adm-tab.is-active::before {
-  content: ""; position: absolute; top: 0; left: 30%; right: 30%;
-  height: 3px; border-radius: 0 0 3px 3px; background: var(--accent);
+  content: ""; position: absolute; bottom: -1px; left: 26%; right: 26%;
+  height: 3px; border-radius: 3px 3px 0 0; background: var(--accent);
 }
 .adm-tab svg { transition: transform var(--t-2) var(--spring); }
 .adm-tab.is-active svg { transform: translateY(-1px) scale(1.08); }
@@ -175,14 +177,66 @@
 .adm-field { display: grid; gap: 6px; min-width: 0; font-size: var(--fs-sm); font-weight: 700; color: var(--text-2); }
 .adm-field small { font-weight: 500; color: var(--text-3); }
 .adm-check { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-sm); font-weight: 600; cursor: pointer; }
-.adm-sort { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; }
-.adm-sort select { width: auto; min-height: 40px; padding-block: 6px; }
+/* Власний випадний список */
+.adm-select { position: relative; min-width: 0; }
+.adm-select__btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit; font-size: 15px; font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--t-1), box-shadow var(--t-1);
+}
+.adm-select__btn:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--border-strong)); }
+.adm-select__btn:focus-visible, .adm-select.is-open .adm-select__btn { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent); }
+.adm-select__prefix { color: var(--text-3); font-weight: 600; white-space: nowrap; }
+.adm-select__value { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adm-select__chev { flex-shrink: 0; color: var(--text-3); transition: transform var(--t-2) var(--spring); }
+.adm-select.is-open .adm-select__chev { transform: rotate(180deg); color: var(--accent); }
+.adm-select__list {
+  position: absolute; z-index: 60;
+  left: 0; right: 0; top: calc(100% + 6px);
+  min-width: max(100%, 220px);
+  max-height: 300px; overflow-y: auto;
+  margin: 0; padding: 6px;
+  list-style: none;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-2);
+  transform-origin: top center;
+  animation: sel-in 180ms var(--ease);
+}
+.adm-select__list.is-up { top: auto; bottom: calc(100% + 6px); transform-origin: bottom center; }
+@keyframes sel-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+.adm-select__list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+}
+.adm-select__list li span { display: grid; gap: 1px; min-width: 0; }
+.adm-select__list li small { font-size: 12px; font-weight: 500; color: var(--text-3); }
+.adm-select__list li.is-active { background: var(--surface-2); }
+.adm-select__list li[aria-selected="true"] { color: var(--accent); }
+.adm-select__list li svg { flex-shrink: 0; }
+
+.adm-sort { flex: 1 1 100%; }
 .adm-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .adm-toolbar > input[type="search"] { flex: 1 1 100%; }
+.mem-toolbar { margin-bottom: 20px; row-gap: 12px; }
 
 .adm-toast {
   position: fixed; left: 50%; z-index: 100;
-  bottom: calc(var(--adm-nav-h) + 84px + env(safe-area-inset-bottom));
+  bottom: calc(var(--adm-badge-h) + 84px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   width: max-content; max-width: calc(100vw - 32px);
   padding: 12px 18px;
@@ -226,7 +280,7 @@
 /* Нативний вибір дати — невидимий, на весь блок: тап відкриває системний календар */
 .att-date__pick input[type="date"] { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; opacity: 0; cursor: pointer; border: 0; padding: 0; }
 
-.att-search { position: sticky; top: calc(var(--adm-top-h) + env(safe-area-inset-top) + 8px); z-index: 10; }
+.att-search { position: sticky; top: calc(var(--adm-top-h) + var(--adm-nav-h) + env(safe-area-inset-top) + 8px); z-index: 10; }
 .att-search__icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
 .att-search input { min-height: 50px; padding-left: 44px; padding-right: 14px; border-radius: var(--adm-r); box-shadow: var(--shadow-1); }
 .att-search.has-add input { padding-right: 112px; }
@@ -327,15 +381,17 @@
 .adm-cb--add { border-style: dashed; color: var(--text-3); background: transparent; }
 .att-add input { border: 0 !important; background: transparent !important; box-shadow: none !important; padding-inline: 0; font-weight: 600; }
 
-/* Підсумки — над нижньою навігацією */
+/* Підсумки — плаваюча картка над плашкою Netlify */
 .att-sum {
-  position: fixed; left: 0; right: 0; z-index: 35;
-  bottom: calc(var(--adm-nav-h) + env(safe-area-inset-bottom));
+  position: fixed; left: 12px; right: 12px; z-index: 35;
+  bottom: calc(var(--adm-badge-h) + env(safe-area-inset-bottom) + 6px);
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 10px 16px;
+  padding: 10px 14px;
   background: var(--glass-strong);
   -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--adm-r);
+  box-shadow: var(--shadow-2);
   font-size: var(--fs-sm);
 }
 .att-sum__stats { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--text-2); min-width: 0; }
@@ -365,7 +421,8 @@
 .mem-table td { display: block; border: 0 !important; padding: 0 !important; min-width: 0; }
 .mem-table td:first-child { grid-column: 1 / -1; }
 .mem-table td[data-label="Група"], .mem-table td[data-label="Телефон"], .mem-table td[data-label="Останній візит"] { display: none; }
-.mem-table td[data-label="Абонемент"] { align-self: center; }
+.mem-table td[data-label="Абонемент"] { grid-column: 1 / -1; }
+.mem-table .mem-actions { grid-column: 1 / -1; justify-content: flex-start; }
 .mem-table tr.pass-expired { box-shadow: inset 4px 0 var(--adm-danger); }
 .mem-table tr.pass-low { box-shadow: inset 4px 0 var(--hold-yellow); }
 .mem-name { display: block; width: 100%; font-weight: 800; font-size: 1rem; text-align: left; line-height: 1.3; overflow-wrap: anywhere; cursor: pointer; }
@@ -477,7 +534,7 @@
 .rep-scroll { border-radius: 0; }
 .rep-add { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 8px 10px; padding: 10px 12px; border-top: 1px dashed var(--border-strong); animation: att-in 200ms var(--ease); }
 .rep-add input { min-height: 42px; padding-block: 6px; }
-.rep-add select { grid-column: 2; width: 100%; min-height: 42px; padding-block: 6px; }
+.rep-add .adm-select { grid-column: 2; }
 .rep-add .btn { grid-column: 3; grid-row: 1; }
 
 .rep-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; font-size: 12px; color: var(--text-2); }
@@ -503,6 +560,19 @@
 .set-card__btn { justify-self: start; }
 .set-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .set-fields .adm-field > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.set-fields--one { grid-template-columns: minmax(0, 1fr); }
+.set-row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.set-row--end { justify-content: flex-end; }
+.set-card code { font-family: var(--font-mono); font-size: 0.9em; padding: 1px 5px; border-radius: 6px; background: var(--surface-2); }
+.set-users { list-style: none; display: grid; gap: 6px; }
+.set-users li { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 12px; background: var(--surface-solid); border: 1px solid var(--border); }
+.set-users__name { flex: 1; min-width: 0; display: grid; }
+.set-users__name b { overflow-wrap: anywhere; }
+.set-users__name small { font-size: 12px; color: var(--text-3); }
+.set-users .adm-icon { width: 38px; height: 38px; }
+.set-gen { display: flex; gap: 6px; }
+.set-gen input { flex: 1; font-family: var(--font-mono); }
+.set-gen .adm-pill { min-height: 44px; }
 .set-money { position: relative; display: block; }
 .set-money input { padding-right: 34px; }
 .set-money > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--text-3); pointer-events: none; }
@@ -523,7 +593,7 @@
 .set-save {
   position: fixed; z-index: 36;
   left: 12px; right: 12px;
-  bottom: calc(var(--adm-nav-h) + env(safe-area-inset-bottom) + 10px);
+  bottom: calc(var(--adm-badge-h) + env(safe-area-inset-bottom) + 6px);
   display: flex; align-items: center; gap: 10px;
   padding: 8px 8px 8px 14px;
   border-radius: var(--adm-r);
@@ -542,16 +612,16 @@
    Ноутбук і ширше
    ========================================================= */
 @media (min-width: 760px) {
-  .adm { --adm-nav-h: 0px; padding-bottom: 96px; }
+  .adm { --adm-nav-h: 0px; padding-bottom: calc(var(--adm-badge-h) + 96px); }
   .adm-top { background: var(--glass-strong); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-  .adm-top__row { height: 64px; }
+  .adm-top__row { min-height: 64px; flex-wrap: nowrap; }
+  .adm-brand, .adm-top__right { height: 64px; }
 
   .adm-tabs {
-    position: static;
+    order: 0; flex: 0 1 auto;
     display: flex; gap: 2px;
-    height: auto; padding: 0;
-    background: none; border: 0;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
+    height: auto; margin: 0;
+    border: 0;
   }
   .adm-tab { flex-direction: row; gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px; font-size: var(--fs-sm); color: var(--text-2); }
   .adm-tab svg { width: 18px; height: 18px; }
@@ -562,8 +632,13 @@
   .adm-tab__short { display: none; }
 
   .adm-main { padding-top: 24px; gap: 20px; }
-  .adm-toast { bottom: 96px; }
+  .adm-toast { bottom: calc(var(--adm-badge-h) + 96px); }
   .adm-toolbar > input[type="search"] { flex: 1 1 260px; }
+  .adm-sort { flex: 0 0 auto; width: 280px; margin-left: auto; }
+  .adm-toolbar .adm-seg { flex: 0 0 auto; }
+  .adm-toolbar .adm-seg button { flex: 0 0 auto; }
+  .mem-table .mem-actions { justify-content: flex-end; }
+  .mem-toolbar { margin-bottom: 24px; }
 
   /* Заняття: колонка до 760px — зручно і на широкому екрані */
   .att { max-width: 760px; margin-inline: auto; width: 100%; }
@@ -574,7 +649,7 @@
   .att-pay__inner { padding-left: 54px; }
   .att-paykind { flex: 0 1 auto; }
   .att-paykind button { flex: 0 0 auto; padding: 4px 12px; }
-  .att-sum { left: 50%; right: auto; bottom: 16px; transform: translateX(-50%); width: min(760px, 100% - 32px); border: 1px solid var(--border); border-radius: var(--adm-r); box-shadow: var(--shadow-2); padding: 12px 18px; }
+  .att-sum { left: 50%; right: auto; bottom: calc(var(--adm-badge-h) + 10px); transform: translateX(-50%); width: min(760px, 100% - 32px); padding: 12px 18px; }
 
   /* Учасники — справжня таблиця */
   .mem-table thead { display: table-header-group; }
@@ -604,7 +679,7 @@
   .rep-toolbar .adm-seg, .rep-toolbar .adm-check { justify-self: start; }
   .adm-toolbar .adm-seg { width: auto; }
   .rep-add { grid-template-columns: 28px minmax(0, 1fr) 160px auto; max-width: 720px; }
-  .rep-add select { grid-column: 3; grid-row: 1; }
+  .rep-add .adm-select { grid-column: 3; grid-row: 1; }
   .rep-add .btn { grid-column: 4; }
   .rep-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .rep-card--accent { grid-column: auto; }
@@ -613,7 +688,8 @@
 
   .set-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 16px; }
   .set-card { padding: 20px; }
-  .set-save { left: 50%; right: auto; bottom: 20px; transform: translateX(-50%); width: min(560px, 100% - 32px); }
+  .set-card--wide { grid-column: 1 / -1; }
+  .set-save { left: 50%; right: auto; bottom: calc(var(--adm-badge-h) + 10px); transform: translateX(-50%); width: min(560px, 100% - 32px); }
   @keyframes set-in { from { transform: translate(-50%, 16px); opacity: 0; } }
 }
 @keyframes adm-pop { from { transform: scale(0.96) translateY(8px); opacity: 0; } }

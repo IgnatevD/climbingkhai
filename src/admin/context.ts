@@ -1,8 +1,10 @@
 import { createContext, useContext } from 'react'
 import type { Member, Settings } from './model'
+import type { Role } from './api'
 
 export type AdminCtx = {
   user: string
+  role: Role
   members: Member[]
   settings: Settings
   /** Додати або оновити учасників у локальному стані (після відповіді сервера) */
