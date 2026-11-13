@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { useI18n } from '../i18n'
 import { SITE } from '../content/site'
 import { Carabiner, IconInstagram, IconMail, IconPhone, IconPin } from './Icons'
+import { FooterSummit, RIDGE_FAR_D, PEAK } from './FooterSummit'
 import './Footer.css'
 
 const YEAR = new Date().getFullYear()
@@ -11,15 +12,17 @@ export function Footer() {
   const { t, to } = useI18n()
   return (
     <footer className="footer">
-      {/* Гірський хребет — «вершина» сторінки */}
-      <svg className="footer__ridge" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
-        <path className="ridge-far" d="M0 160 L0 110 L120 70 L210 98 L330 40 L430 92 L540 58 L640 100 L760 20 L880 90 L980 62 L1090 104 L1200 50 L1320 96 L1440 66 L1440 160Z" />
-        <path className="ridge-near" d="M0 160 L0 130 L160 100 L260 126 L380 88 L520 132 L640 104 L760 80 L900 130 L1040 98 L1180 128 L1300 104 L1440 124 L1440 160Z" />
-        <g className="ridge-flag" transform="translate(760 20)">
-          <path d="M0 0 V-34" stroke="currentColor" strokeWidth="3" />
-          <path d="M0 -34 L22 -27 L0 -20Z" fill="var(--accent)" />
-        </g>
-      </svg>
+      {/* Гірський хребет — «вершина» сторінки; на неї виходить скелелаз */}
+      <FooterSummit>
+        <svg className="footer__ridge" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+          <path className="ridge-far" d={RIDGE_FAR_D} />
+          <path className="ridge-near" d="M0 160 L0 130 L160 100 L260 126 L380 88 L520 132 L640 104 L760 80 L900 130 L1040 98 L1180 128 L1300 104 L1440 124 L1440 160Z" />
+          <g className="ridge-flag" transform={`translate(${PEAK[0]} ${PEAK[1]})`}>
+            <path d="M0 0 V-34" stroke="currentColor" strokeWidth="3" />
+            <path d="M0 -34 L22 -27 L0 -20Z" fill="var(--accent)" />
+          </g>
+        </svg>
+      </FooterSummit>
 
       <div className="footer__body">
         <div className="container footer__grid">

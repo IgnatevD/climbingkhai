@@ -1,11 +1,47 @@
-.nf { position: relative; overflow: hidden; padding-block: var(--s-7) var(--s-9); }
+.nf { position: relative; overflow: hidden; padding-block: var(--s-6) var(--s-9); }
 .nf__inner { position: relative; display: grid; justify-items: center; gap: var(--s-4); text-align: center; }
 .nf__inner .lead { margin-inline: auto; }
-.nf__fall { width: 110px; height: auto; }
-.nf__anchor { fill: none; stroke: var(--text-2); stroke-width: 4; }
-.nf__rope { stroke: var(--rope); stroke-width: 4; stroke-linecap: round; }
-.nf__swing { transform-origin: 60px 10px; animation: nf-swing 2.6s ease-in-out infinite alternate; }
-@keyframes nf-swing { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+
+.nf__scene { position: relative; }
+.nf__fall { display: block; width: min(220px, 60vw); height: auto; cursor: grab; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.nf__fall:active { cursor: grabbing; }
+
+.nf__bolt { fill: var(--surface-solid); stroke: var(--text-3); stroke-width: 3; }
+.nf__sling { fill: var(--hold-teal); }
+.nf__biner { fill: none; stroke: var(--text-2); stroke-width: 3; }
+.nf__rope { fill: none; stroke: var(--rope); stroke-width: 4; stroke-linecap: round; }
+.nf__rope--belay { opacity: 0.45; stroke-dasharray: 2 7; }
+
+.nf__limb { fill: none; stroke: var(--text); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.nf__torso { fill: none; stroke: var(--hold-teal); stroke-width: 10; stroke-linecap: round; }
+.nf__harness { stroke: var(--hold-yellow); stroke-width: 4; stroke-linecap: round; }
 .nf__head { fill: var(--hold-yellow); }
-.nf__body { fill: none; stroke: var(--text); stroke-width: 6; stroke-linecap: round; }
-.nf__code { font-family: var(--font-display); font-size: clamp(4rem, 20vw, 8rem); font-weight: 800; line-height: 1; color: var(--accent); }
+.nf__helmet { fill: var(--accent); }
+
+/* «Зрив!» — вигук у момент, коли мотузка ловить */
+.nf__shout {
+  position: absolute;
+  top: 4%; right: -8%;
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 800 var(--fs-sm)/1.2 var(--font-display);
+  transform: rotate(8deg) scale(0);
+  opacity: 0;
+}
+.nf__scene.is-caught .nf__shout { animation: nf-shout 2.4s var(--spring) forwards; }
+@keyframes nf-shout {
+  0% { transform: rotate(8deg) scale(0); opacity: 0; }
+  12% { transform: rotate(8deg) scale(1.15); opacity: 1; }
+  20%, 70% { transform: rotate(8deg) scale(1); opacity: 1; }
+  100% { transform: rotate(8deg) scale(0.9); opacity: 0; }
+}
+
+.nf__code { font-family: var(--font-display); font-size: clamp(3.5rem, 18vw, 7rem); font-weight: 800; line-height: 1; color: var(--accent); }
+.nf__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
+.nf__hint { font-size: var(--fs-xs); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nf__scene.is-caught .nf__shout { animation: none; transform: rotate(8deg); opacity: 1; }
+}

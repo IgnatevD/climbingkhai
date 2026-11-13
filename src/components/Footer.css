@@ -1,5 +1,5 @@
 .footer { margin-top: var(--s-8); color: var(--text); }
-.footer__ridge { display: block; width: 100%; height: clamp(70px, 12vw, 160px); margin-bottom: -1px; }
+.footer__ridge { display: block; overflow: visible; width: 100%; height: clamp(70px, 12vw, 160px); margin-bottom: -1px; }
 .ridge-far { fill: var(--bg-2); }
 .ridge-near { fill: var(--surface-solid); }
 .ridge-flag { color: var(--text-2); }

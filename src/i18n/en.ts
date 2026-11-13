@@ -265,12 +265,16 @@ export const en: Dict = {
     contacts: 'Contacts',
     rights: 'KhAI Climbing & Mountaineering Club',
     top: 'You topped out! Back up ↑',
+    summit: 'Route sent!',
+    summitCta: 'Now try the real wall',
   },
 
   notFound: {
     title: 'You fell off the route',
     text: 'This page doesn’t exist. But the rope holds — head back to the home page.',
-    home: 'Home page',
+    home: 'Back on the route',
+    fall: 'Whipper!',
+    push: 'Tap to give it a swing',
   },
 
   theme: { dark: 'Night', light: 'Day' },

@@ -1,0 +1,83 @@
+.summit { position: relative; }
+.summit__sky { position: absolute; inset: 0; pointer-events: none; }
+
+.summit__climber {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: calc(var(--h) * 0.667);
+  height: var(--h);
+  overflow: visible;
+  transform: translate(-50%, 70%); /* сховався за хребтом */
+}
+.summit.is-up .summit__climber { animation: summit-climb 1.25s var(--ease) forwards; }
+
+/* Два «підтягування» й вихід на ноги */
+@keyframes summit-climb {
+  0% { transform: translate(-50%, 70%); }
+  35% { transform: translate(-50%, 5%); }
+  50% { transform: translate(-50%, 12%); }
+  80% { transform: translate(-50%, -96%); }
+  100% { transform: translate(-50%, -100%); }
+}
+
+.summit__limb { fill: none; stroke: var(--text); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.summit__torso { fill: none; stroke: var(--hold-teal); stroke-width: 7; stroke-linecap: round; }
+.summit__harness { stroke: var(--hold-yellow); stroke-width: 3; stroke-linecap: round; }
+.summit__head { fill: var(--hold-yellow); }
+.summit__helmet { fill: var(--accent); }
+
+/* Махає рукою — обертання від плеча */
+.summit__wave { transform-box: fill-box; transform-origin: 0% 100%; }
+.summit.is-up .summit__wave { animation: summit-wave 420ms ease-in-out 1.25s 6 alternate; }
+@keyframes summit-wave { from { transform: rotate(0deg); } to { transform: rotate(-28deg); } }
+
+/* Бульбашка з підписом */
+.summit__bubble {
+  position: absolute;
+  left: var(--x);
+  top: calc(var(--y) - var(--h) - 12px);
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  max-width: min(240px, 70vw);
+  padding: 8px 14px;
+  border-radius: var(--r-md, 14px);
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-2);
+  font-size: var(--fs-sm);
+  line-height: 1.3;
+  text-align: center;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -100%) scale(0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-2), transform var(--t-3) var(--spring), visibility 0s linear var(--t-3);
+}
+.summit__bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -6px;
+  width: 10px; height: 10px;
+  margin-left: -5px;
+  background: inherit;
+  border: inherit;
+  border-top: 0; border-left: 0;
+  transform: rotate(45deg);
+}
+.summit__bubble a { font-weight: 800; color: var(--accent); }
+.summit__bubble a:hover { text-decoration: underline; }
+.summit.is-up .summit__bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -100%) scale(1);
+  transition-delay: 1.05s, 1.05s, 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summit.is-up .summit__climber { animation: none; transform: translate(-50%, -100%); }
+  .summit.is-up .summit__wave { animation: none; transform: rotate(-14deg); }
+  .summit.is-up .summit__bubble { transition: none; }
+}

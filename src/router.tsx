@@ -20,6 +20,8 @@ const pages: RouteObject[] = [
 ]
 
 export const router = createBrowserRouter([
+  // Облік занять для тренерів — окрема сторінка без шапки сайту
+  { path: '/admin', lazy: page(() => import('./admin/AdminApp')) },
   { path: '/en', Component: Layout, children: pages },
   { path: '/', Component: Layout, children: pages },
 ])
