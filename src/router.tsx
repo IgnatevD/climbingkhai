@@ -16,6 +16,7 @@ const pages: RouteObject[] = [
   { path: 'events/:slug', lazy: page(() => import('./pages/EventPage')) },
   { path: 'gallery', lazy: page(() => import('./pages/Gallery')) },
   { path: 'contacts', lazy: page(() => import('./pages/Contacts')) },
+  { path: 'game', lazy: page(() => import('./pages/Game')) },
   { path: '*', lazy: page(() => import('./pages/NotFound')) },
 ]
 

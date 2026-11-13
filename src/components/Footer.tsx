@@ -36,6 +36,7 @@ export function Footer() {
             <h2 className="footer__title">{t.footer.nav}</h2>
             <ul role="list" className="footer__links">
               {NAV.map((k) => <li key={k}><Link to={to(k)}>{t.nav[k]}</Link></li>)}
+              <li><Link to={to('game')}>{t.nav.game}</Link></li>
             </ul>
           </nav>
 

@@ -31,7 +31,35 @@
 }
 @keyframes chalk-shine { 0%, 50% { background-position: 100% 0; } 100% { background-position: 0 0; } }
 .hero__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
-.hero__visual { position: relative; }
+.hero__visual { position: relative; display: grid; justify-items: center; gap: var(--s-4); }
+.hero__visual > :first-child { justify-self: stretch; }
+
+/* Посилання на лід-гру під стендом */
+.hero__game {
+  display: inline-flex; align-items: center; gap: 10px;
+  max-width: 100%;
+  padding: 10px 18px 10px 14px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur));
+  font-size: var(--fs-sm); font-weight: 700; text-align: left;
+  color: var(--text);
+  transition: border-color var(--t-1), background var(--t-1), transform var(--t-2) var(--spring);
+}
+.hero__game:hover { border-color: var(--accent); background: var(--surface-2); transform: translateY(-2px); }
+.hero__game:active { transform: scale(0.97); }
+.hero__game .arrow { color: var(--accent); transition: transform var(--t-2) var(--spring); }
+.hero__game:hover .arrow { transform: translateX(4px); }
+.hero__game-dot {
+  flex-shrink: 0;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 55%, transparent);
+  animation: hero-game-ping 2s ease-out infinite;
+}
+@keyframes hero-game-ping { 70%, 100% { box-shadow: 0 0 0 8px transparent; } }
+@media (prefers-reduced-motion: reduce) { .hero__game-dot { animation: none; } }
 
 .hero__hint {
   display: none;
@@ -187,3 +215,11 @@
 }
 @keyframes swing { from { rotate: -6deg; } to { rotate: 6deg; } }
 .cta__btn { font-size: var(--fs-lg); min-height: 58px; padding-inline: var(--s-6); }
+
+/* ---------- Промо-блок на головній ---------- */
+.game-promo { display: grid; gap: var(--s-4); align-items: center; overflow: hidden; position: relative; }
+.game-promo__text { display: grid; gap: var(--s-3); justify-items: start; }
+.game-promo__art { width: 100%; max-width: 220px; justify-self: center; color: var(--accent); }
+@media (min-width: 760px) {
+  .game-promo { grid-template-columns: minmax(0, 1fr) 220px; padding: var(--s-6); }
+}

@@ -34,6 +34,12 @@ export default function Home() {
           </div>
           <div className="hero__visual" data-reveal="scale" style={{ '--delay': '150ms' } as React.CSSProperties}>
             <WallHero />
+            {/* Посилання на гру — прямо під стендом */}
+            <Link to={to('game')} className="hero__game">
+              <span className="hero__game-dot" aria-hidden="true" />
+              {t.game.heroCta}
+              <span className="arrow" aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
         <p className="hero__hint" aria-hidden="true"><span className="hero__mouse" />{t.home.scrollHint}</p>
@@ -109,6 +115,31 @@ export default function Home() {
 
       {/* ---------- НОВИНИ: 3 останні пости з Instagram (або події клубу) ---------- */}
       <InstagramNews />
+
+      {/* ---------- ЛІД-ГРА ---------- */}
+      <section className="section">
+        <div className="container">
+          <div className="game-promo card card--pad" data-reveal>
+            <div className="game-promo__text">
+              <Grade value="∞">{t.game.grade}</Grade>
+              <h2 className="h2">{t.game.promoTitle}</h2>
+              <p className="muted">{t.game.promoText}</p>
+              <Link to={to('game')} className="btn btn--primary">{t.game.promoCta} <span className="arrow">→</span></Link>
+            </div>
+            <svg className="game-promo__art" viewBox="0 0 120 160" fill="none" aria-hidden="true">
+              <path d="M24 156 C 30 120, 86 118, 74 88 S 40 50, 70 8" stroke="var(--rope)" strokeWidth="3" strokeLinecap="round" strokeDasharray="1 7" />
+              <ellipse cx="34" cy="132" rx="11" ry="8" fill="var(--hold-teal)" />
+              <rect x="70" y="104" width="22" height="7" rx="3.5" fill="var(--hold-yellow)" />
+              <path d="M30 78 a13 13 0 0 1 26 0 z" fill="var(--hold-violet)" />
+              <ellipse cx="84" cy="52" rx="11" ry="8" fill="var(--hold-teal)" />
+              <ellipse cx="48" cy="22" rx="11" ry="8" fill="var(--hold-pink)" />
+              <circle cx="92" cy="80" r="4" fill="currentColor" />
+              <path d="M92 84 v12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+              <ellipse cx="92" cy="101" rx="4" ry="6" stroke="var(--text-2)" strokeWidth="2" />
+            </svg>
+          </div>
+        </div>
+      </section>
 
       {/* ---------- ЗАКЛИК ---------- */}
       <section className="section">

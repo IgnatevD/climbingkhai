@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle'
 import { Carabiner, IconInstagram, IconPhone } from './Icons'
 import './Header.css'
 
-const NAV = ['about', 'training', 'promalp', 'events', 'gallery', 'contacts'] as const
+const NAV = ['about', 'training', 'promalp', 'events', 'gallery', 'contacts', 'game'] as const
 
 function LangSwitch() {
   const { lang, t } = useI18n()

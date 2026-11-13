@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from 'vite'
 
 /**
- * Серверні функції Netlify під час `npm run dev`: /api/admin/* та /api/instagram
+ * Серверні функції Netlify під час `npm run dev`: /api/admin/*, /api/game/* та /api/instagram
  * працюють локально без Netlify CLI. Сховище Blobs замінено файлами в .netlify/dev-blobs/.
  * Логін/пароль адмінки беруться з .env.local (ADMIN_LOGIN, ADMIN_PASSWORD), інакше — admin / admin.
  */
@@ -12,6 +12,7 @@ function netlifyFunctionsDev(env: Record<string, string>): Plugin {
   const routes: [RegExp, string][] = [
     [/^\/api\/admin(\/|$)/, '/netlify/functions/admin.mts'],
     [/^\/api\/instagram(\?|$)/, '/netlify/functions/instagram.mts'],
+    [/^\/api\/game(\/|$)/, '/netlify/functions/game.mts'],
   ]
   const usingDefaults = !env.ADMIN_USERS && !(env.ADMIN_LOGIN && env.ADMIN_PASSWORD)
   const vars: Record<string, string> = {
