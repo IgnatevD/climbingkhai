@@ -2,15 +2,16 @@
   --mx: 0;
   --my: 0;
   position: relative;
-  perspective: 1200px;
 }
 .wall__panel {
   position: relative;
   max-width: min(420px, 82vw);
   margin-inline: auto;
-  transform: rotateY(calc(var(--mx) * -10deg)) rotateX(calc(var(--my) * 8deg));
-  transform-style: preserve-3d;
   transition: transform 600ms var(--ease);
+}
+/* 3D-нахил вмикається лише на комп'ютері з мишею (на iOS 3D-шар заважає SVG-анімації) */
+.wall.is-tilt .wall__panel {
+  transform: perspective(1200px) rotateY(calc(var(--mx) * -10deg)) rotateX(calc(var(--my) * 8deg));
 }
 .wall__svg {
   width: 100%;
@@ -24,9 +25,9 @@
 .wall__bolt { fill: rgba(127, 127, 127, 0.28); }
 .wall__seam { stroke: var(--border); stroke-width: 1.5; }
 
-.wall__layer { transition: transform 600ms var(--ease); }
-.wall__layer--back { transform: translate(calc(var(--mx) * -8px), calc(var(--my) * -8px)); }
-.wall__layer--front { transform: translate(calc(var(--mx) * 10px), calc(var(--my) * 10px)); }
+.wall.is-tilt .wall__layer { transition: transform 600ms var(--ease); }
+.wall.is-tilt .wall__layer--back { transform: translate(calc(var(--mx) * -8px), calc(var(--my) * -8px)); }
+.wall.is-tilt .wall__layer--front { transform: translate(calc(var(--mx) * 10px), calc(var(--my) * 10px)); }
 
 .hold { stroke: rgba(0, 0, 0, 0.22); stroke-width: 1.2; }
 .hold--orange { fill: var(--hold-orange); }
@@ -38,27 +39,45 @@
 .hold__bolt { fill: rgba(0, 0, 0, 0.4); }
 
 /* Зачепи маршруту з'являються по черзі знизу вгору */
-.route-hold { animation: hold-pop 600ms var(--spring) both; animation-delay: calc(var(--i) * 90ms + 200ms); transform-box: fill-box; }
-@keyframes hold-pop { from { opacity: 0; scale: 0.2; } }
+.route-hold {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hold-pop 600ms var(--spring) both;
+  animation-delay: calc(var(--i) * 90ms + 200ms);
+}
+@keyframes hold-pop { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: scale(1); } }
 
-.wall__rope {
+/* Лінія маршруту (довжина в пікселях задана в TSX — Safari не завжди враховує pathLength) */
+.wall__route {
   fill: none;
+  stroke: var(--rope);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.35;
+  animation: route-draw 2.2s 0.6s var(--ease) forwards;
+}
+@keyframes route-draw { to { stroke-dashoffset: 0; } }
+
+.wall__toprope {
   stroke: var(--rope);
   stroke-width: 3;
   stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
-  animation: rope-draw 2.6s 1s var(--ease) forwards;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+  animation: fade-in 500ms 1.4s both;
 }
-@keyframes rope-draw { to { stroke-dashoffset: 0; } }
+@keyframes fade-in { from { opacity: 0; } }
 
 .wall__anchor circle:first-child { fill: none; stroke: var(--text-2); stroke-width: 3; }
 .wall__anchor circle:last-child { fill: var(--text-2); }
 
+.climber { animation: fade-in 500ms 1.4s both; }
+.climber__limbs,
+.climber__torso { fill: none; stroke: var(--text); stroke-linecap: round; stroke-linejoin: round; }
+.climber__limbs { stroke-width: 4.2; }
+.climber__torso { stroke-width: 6.5; }
 .climber__head { fill: var(--hold-yellow); stroke: rgba(0, 0, 0, 0.35); stroke-width: 1.5; }
-.climber__body { fill: none; stroke: var(--text); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.climber__helmet { fill: none; stroke: var(--hold-orange); stroke-width: 3.5; stroke-linecap: round; }
 .climber__harness { fill: var(--hold-orange); }
 
 .wall__scale {

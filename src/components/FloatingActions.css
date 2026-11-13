@@ -1,0 +1,260 @@
+/* =========================================================
+   Плаваючі кнопки: «Зв'язатися» (зачеп) і «Вгору» (кільце-мотузка)
+   ========================================================= */
+.fab {
+  --fab-right: calc(16px + env(safe-area-inset-right));
+  --fab-bottom: calc(16px + env(safe-area-inset-bottom));
+  --hold-shape: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  position: fixed;
+  right: var(--fab-right);
+  bottom: var(--fab-bottom);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+.fab > * { pointer-events: auto; }
+
+/* Затемнення під меню */
+.fab__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(8, 10, 12, 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  cursor: default;
+  transition: opacity var(--t-2), visibility var(--t-2);
+}
+.fab.is-open .fab__backdrop { opacity: 1; visibility: visible; }
+
+/* ---------- Головна кнопка-зачеп ---------- */
+.fab__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border-radius: var(--r-full);
+  color: var(--accent-ink);
+  font-weight: 800;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab__hold {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 56px;
+  border-radius: var(--hold-shape);
+  background: var(--accent);
+  box-shadow: inset -5px -5px 0 rgba(0, 0, 0, 0.18), var(--glow), 0 10px 26px rgba(0, 0, 0, 0.28);
+  transition: transform var(--t-3) var(--spring), border-radius var(--t-3) var(--ease);
+  animation: fab-wiggle 6s 3s ease-in-out infinite;
+}
+.fab__main:hover .fab__hold { transform: rotate(-12deg) scale(1.06); }
+.fab__main:active .fab__hold { transform: scale(0.92); }
+.fab.is-open .fab__hold { transform: rotate(-90deg); border-radius: 50%; animation: none; }
+/* Отвір під болт — як у справжнього зачепу */
+.fab__bolt {
+  position: absolute;
+  right: 11px;
+  bottom: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+.fab__icon { position: absolute; display: grid; place-items: center; transition: opacity var(--t-2), transform var(--t-3) var(--spring); }
+.fab__icon--close { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+.fab.is-open .fab__icon--phone { opacity: 0; transform: rotate(90deg) scale(0.5); }
+.fab.is-open .fab__icon--close { opacity: 1; transform: rotate(90deg); }
+
+/* Підпис — лише на ширших екранах */
+.fab__label {
+  display: none;
+  order: -1;
+  padding: 10px 16px;
+  border-radius: var(--r-full);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--t-2) var(--spring);
+}
+.fab__main:hover .fab__label { transform: translateX(-4px); }
+
+@keyframes fab-wiggle {
+  0%, 86%, 100% { transform: rotate(0); }
+  89% { transform: rotate(-14deg) scale(1.05); }
+  92% { transform: rotate(10deg); }
+  95% { transform: rotate(-5deg); }
+}
+
+/* ---------- Меню-маршрут ---------- */
+.fab__menu {
+  position: absolute;
+  right: 0;
+  bottom: 70px;
+  list-style: none;
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+  margin: 0;
+  padding: 0 0 4px;
+}
+/* Мотузка, що тягнеться вгору від кнопки */
+.fab__menu::before {
+  content: "";
+  position: absolute;
+  right: 28px;
+  top: 22px;
+  bottom: -18px;
+  width: 3px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(180deg, var(--rope) 0 7px, var(--hold-yellow) 7px 10px);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform var(--t-3) var(--ease);
+}
+.fab.is-open .fab__menu::before { transform: scaleY(1); }
+.fab__menu li {
+  opacity: 0;
+  transform: translateY(18px) scale(0.6);
+  transform-origin: right center;
+  transition: opacity var(--t-2) var(--ease), transform var(--t-3) var(--spring);
+  transition-delay: calc(var(--i) * 40ms);
+}
+.fab.is-open .fab__menu li { opacity: 1; transform: none; transition-delay: calc(var(--i) * 60ms + 80ms); }
+.fab:not(.is-open) .fab__menu { visibility: hidden; transition: visibility 0s var(--t-3); }
+
+.fab__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab__item-text {
+  display: grid;
+  max-width: min(72vw, 300px);
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-2);
+  text-align: right;
+  line-height: 1.25;
+  transition: border-color var(--t-1), transform var(--t-2) var(--spring);
+}
+.fab__item-text b { font-size: var(--fs-sm); color: var(--text); white-space: nowrap; }
+.fab__item-text small { font-size: var(--fs-xs); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fab__item-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 42px;
+  margin-right: 7px;
+  border-radius: var(--hold-shape);
+  background: var(--c);
+  color: #10120f;
+  box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.18), 0 8px 18px rgba(0, 0, 0, 0.25);
+  transition: transform var(--t-3) var(--spring);
+}
+.fab__menu li:nth-child(2) .fab__item-icon { border-radius: 40% 60% 45% 55% / 60% 45% 55% 40%; }
+.fab__menu li:nth-child(3) .fab__item-icon { border-radius: 50% 50% 35% 65% / 45% 55% 45% 55%; }
+.fab__menu li:nth-child(4) .fab__item-icon { border-radius: 62% 38% 50% 50% / 40% 60% 40% 60%; }
+.fab__item:hover .fab__item-text,
+.fab__item:focus-visible .fab__item-text { border-color: var(--accent); transform: translateX(-4px); }
+.fab__item:hover .fab__item-icon { transform: rotate(-16deg) scale(1.1); }
+
+/* ---------- Вгору ---------- */
+.fab__top {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.7);
+  transition: opacity var(--t-2) var(--ease), transform var(--t-3) var(--spring), visibility var(--t-2);
+  -webkit-tap-highlight-color: transparent;
+}
+.fab__top.is-visible { opacity: 1; visibility: visible; transform: none; }
+.fab__top:hover { transform: translateY(-3px); }
+.fab__ring { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); transform: rotate(-90deg); }
+.fab__ring-track { fill: none; stroke: var(--border-strong); stroke-width: 3; stroke-dasharray: 3 4; }
+.fab__ring-rope {
+  fill: none;
+  stroke: var(--rope);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke-dasharray 120ms linear;
+  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--rope) 60%, transparent));
+}
+.fab__arrow {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--t-2) var(--spring);
+}
+.fab__top:hover .fab__arrow { transform: translateY(-3px); }
+.fab__top.is-flying .fab__arrow { animation: fab-fly 700ms var(--ease); }
+@keyframes fab-fly {
+  0% { transform: translateY(0); opacity: 1; }
+  45% { transform: translateY(-26px); opacity: 0; }
+  46% { transform: translateY(18px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.fab__tip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  padding: 5px 10px;
+  border-radius: var(--r-sm);
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  font: 700 12px/1.2 var(--font-mono);
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0;
+  transform: translate(6px, -50%);
+  pointer-events: none;
+  transition: opacity var(--t-1), transform var(--t-2) var(--ease);
+}
+@media (hover: hover) {
+  .fab__top:hover .fab__tip, .fab__top:focus-visible .fab__tip { opacity: 1; transform: translate(0, -50%); }
+}
+
+/* ---------- Ширші екрани ---------- */
+@media (min-width: 640px) {
+  .fab { --fab-right: 24px; --fab-bottom: 24px; }
+  .fab__label { display: block; }
+}
+@media (min-width: 1024px) {
+  /* Праворуч уже висить мотузка висотоміра — кнопки стоять під нею */
+  .fab { --fab-right: 18px; }
+}

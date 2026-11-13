@@ -6,6 +6,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { Altimeter } from './Altimeter'
 import { ChalkDust } from './ChalkDust'
+import { FloatingActions } from './FloatingActions'
 
 function Shell() {
   const { t } = useI18n()
@@ -26,6 +27,7 @@ function Shell() {
         </Suspense>
       </main>
       <Footer />
+      <FloatingActions />
       <ChalkDust />
       <ScrollRestoration />
     </>

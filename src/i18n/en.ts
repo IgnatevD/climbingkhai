@@ -26,6 +26,18 @@ export const en: Dict = {
     signUp: 'Sign up',
   },
 
+  fab: {
+    contact: 'Contact us',
+    contactTitle: 'Contact the club',
+    close: 'Close',
+    call: 'Call us',
+    instagram: 'Message on Instagram',
+    email: 'Send an email',
+    route: 'How to find us',
+    toTop: 'Back to top',
+    height: 'Height',
+  },
+
   altimeter: { label: 'Height', top: 'Top!' },
 
   home: {
@@ -61,6 +73,10 @@ export const en: Dict = {
     eventsGrade: 'Chronicle',
     eventsTitle: 'Latest club events',
     eventsAll: 'All events',
+    newsGrade: 'News',
+    newsTitle: 'Fresh from our Instagram',
+    newsText: 'The club’s latest posts: training, trips, competitions.',
+    newsAll: 'All posts',
     ctaTitle: 'Ready for your first top?',
     ctaText: 'Bring sportswear, indoor shoes and the will to climb. We’ll show you the rest.',
     ctaButton: 'Call us',
@@ -75,6 +91,9 @@ export const en: Dict = {
     loading: 'Loading posts…',
     fallbackTitle: 'Follow us on Instagram',
     fallbackText: 'The latest photos and videos from training and trips are on our profile.',
+    readMore: 'View on Instagram',
+    video: 'Video',
+    album: 'Album',
   },
 
   about: {

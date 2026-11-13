@@ -21,7 +21,7 @@
     position: fixed;
     right: 22px;
     top: calc(var(--header-h) + 28px);
-    bottom: 36px;
+    bottom: 168px; /* під мотузкою — плаваючі кнопки */
     width: 4px;
     z-index: 40;
   }

@@ -3,7 +3,7 @@
 .ridge-far { fill: var(--bg-2); }
 .ridge-near { fill: var(--surface-solid); }
 .ridge-flag { color: var(--text-2); }
-.footer__body { background: var(--surface-solid); padding-block: var(--s-6) var(--s-5); }
+.footer__body { background: var(--surface-solid); padding-block: var(--s-6) calc(var(--s-5) + 84px); } /* місце під плаваючі кнопки */
 
 .footer__grid { display: grid; gap: var(--s-6); }
 .footer__brand { display: grid; gap: var(--s-3); max-width: 38ch; justify-items: start; }

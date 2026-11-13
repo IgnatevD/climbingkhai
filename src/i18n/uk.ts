@@ -27,6 +27,18 @@ export const uk = {
     signUp: 'Записатися',
   },
 
+  fab: {
+    contact: 'Зв’язатися',
+    contactTitle: 'Зв’язатися з клубом',
+    close: 'Закрити',
+    call: 'Зателефонувати',
+    instagram: 'Написати в Instagram',
+    email: 'Написати на email',
+    route: 'Як нас знайти',
+    toTop: 'Вгору',
+    height: 'Висота',
+  },
+
   altimeter: { label: 'Висота', top: 'Топ!' },
 
   home: {
@@ -62,6 +74,10 @@ export const uk = {
     eventsGrade: 'Хроніка',
     eventsTitle: 'Останні події клубу',
     eventsAll: 'Усі події',
+    newsGrade: 'Новини',
+    newsTitle: 'Свіже з нашого Instagram',
+    newsText: 'Останні пости клубу: тренування, виїзди, змагання.',
+    newsAll: 'Усі пости',
     ctaTitle: 'Готовий до першого топу?',
     ctaText: 'Беремо спортивну форму, змінне взуття і бажання лізти. Решту — покажемо.',
     ctaButton: 'Зателефонувати',
@@ -76,6 +92,9 @@ export const uk = {
     loading: 'Завантажуємо пости…',
     fallbackTitle: 'Стежте за нами в Instagram',
     fallbackText: 'Найсвіжіші фото й відео з тренувань і виїздів — у нашому профілі.',
+    readMore: 'Дивитись в Instagram',
+    video: 'Відео',
+    album: 'Альбом',
   },
 
   about: {

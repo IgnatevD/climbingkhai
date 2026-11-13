@@ -2,12 +2,10 @@ import { Link } from 'react-router'
 import { useI18n } from '../i18n'
 import { usePageMeta } from '../hooks'
 import { SITE, IMAGES } from '../content/site'
-import { EVENTS, sortedEvents } from '../content/events'
 import { WallHero } from '../components/WallHero'
 import { Counter, Grade, Marquee, Photo } from '../components/ui'
-import { EventCard } from '../components/EventCard'
 import { Schedule } from '../components/Schedule'
-import { InstagramFeed } from '../components/InstagramFeed'
+import { InstagramNews } from '../components/InstagramNews'
 import { IconArrow, IconPhone } from '../components/Icons'
 import './Home.css'
 
@@ -16,7 +14,6 @@ const PATH_COLORS = ['var(--hold-lime)', 'var(--hold-teal)', 'var(--hold-violet)
 export default function Home() {
   const { t, to } = useI18n()
   usePageMeta(t.meta.siteName, t.meta.description)
-  const latest = sortedEvents(EVENTS.filter((e) => !e.pinned)).slice(0, 3)
 
   return (
     <>
@@ -110,23 +107,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- ПОДІЇ ---------- */}
-      <section className="section">
-        <div className="container">
-          <div className="events-head">
-            <div className="section-head">
-              <div data-reveal><Grade value="★">{t.home.eventsGrade}</Grade></div>
-              <h2 className="h2" data-reveal>{t.home.eventsTitle}</h2>
-            </div>
-            <Link to={to('events')} className="btn btn--ghost" data-reveal>{t.home.eventsAll} <span className="arrow">→</span></Link>
-          </div>
-          <div className="events-grid">
-            {latest.map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
-          </div>
-        </div>
-      </section>
-
-      <InstagramFeed />
+      {/* ---------- НОВИНИ: 3 останні пости з Instagram (або події клубу) ---------- */}
+      <InstagramNews />
 
       {/* ---------- ЗАКЛИК ---------- */}
       <section className="section">

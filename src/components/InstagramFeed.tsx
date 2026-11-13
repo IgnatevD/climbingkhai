@@ -1,20 +1,9 @@
-import { useEffect, useState } from 'react'
-import { useInView } from '../hooks'
+import { useInstagram } from '../hooks/useInstagram'
 import { useI18n } from '../i18n'
 import { SITE } from '../content/site'
 import { Grade, Holds } from './ui'
 import { IconInstagram, IconExternal } from './Icons'
 import './InstagramFeed.css'
-
-export type IgPost = {
-  id: string
-  type: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM'
-  image: string
-  caption: string
-  permalink: string
-  timestamp: string
-}
-type State = { status: 'idle' | 'ready' | 'off'; posts: IgPost[] }
 
 /**
  * Стрічка Instagram. Дані — з серверної функції /api/instagram (Netlify),
@@ -22,19 +11,7 @@ type State = { status: 'idle' | 'ready' | 'off'; posts: IgPost[] }
  */
 export function InstagramFeed({ limit = 8 }: { limit?: number }) {
   const { t } = useI18n()
-  const [ref, inView] = useInView<HTMLElement>('400px')
-  const [state, setState] = useState<State>({ status: 'idle', posts: [] })
-
-  useEffect(() => {
-    if (!inView || state.status !== 'idle') return
-    fetch(`/api/instagram?limit=${limit}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data: { posts?: IgPost[] }) => {
-        const posts = (data.posts ?? []).slice(0, limit)
-        setState({ status: posts.length ? 'ready' : 'off', posts })
-      })
-      .catch(() => setState({ status: 'off', posts: [] }))
-  }, [inView, limit, state.status])
+  const { ref, ...state } = useInstagram<HTMLElement>(limit)
 
   return (
     <section ref={ref} className="section ig" aria-labelledby="ig-title">
